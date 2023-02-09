@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<Defs>
+  <DesignationDef>
+    <defName>IncreaseQuality_Building</defName>
+    <texturePath>UI/DesQualityUp</texturePath>
+    <targetType>Thing</targetType>
+  </DesignationDef>
+  <DesignationDef>
+    <defName>IncreaseQuality_Items</defName>
+    <texturePath>UI/DesQualityUp</texturePath>
+    <targetType>Thing</targetType>
+  </DesignationDef>
+</Defs>
