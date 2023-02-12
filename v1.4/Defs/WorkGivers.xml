@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<Defs>
+  <WorkGiverDef>
+    <defName>UpgQlty_UpgradeQuality_Item</defName>
+    <label>upgrade items</label>
+    <giverClass>UpgradeQuality.Items.WorkGiver_UpgradeQuality_Item</giverClass>
+    <workType>Crafting</workType>
+    <priorityInType>95</priorityInType>
+    <fixedBillGiverDefs>
+      <li>UpgQlty_UpgradeBench</li>
+    </fixedBillGiverDefs>
+    <verb>upgrade item</verb>
+    <gerund>upgrading item</gerund>
+    <requiredCapacities>
+      <li>Manipulation</li>
+    </requiredCapacities>
+  </WorkGiverDef>
+</Defs>

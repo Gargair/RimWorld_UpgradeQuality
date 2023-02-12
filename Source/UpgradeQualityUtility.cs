@@ -4,7 +4,9 @@ using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 using UpgradeQuality.Building;
+using UpgradeQuality.Items;
 using Verse;
+using Verse.AI;
 
 namespace UpgradeQuality
 {
@@ -50,6 +52,20 @@ namespace UpgradeQuality
             var harmony = new Harmony("rakros.rimworld.upgradequality");
             harmony.PatchAll();
             FrameUtility.AddCustomFrames();
+            var innerDisplayClass = AccessTools.FirstInner(typeof(Toils_Haul), (inner) => inner.Name.Contains("<>c__DisplayClass6_0"));
+            if (innerDisplayClass == null)
+            {
+                LogMessage(LogLevel.Error, "Failed to find type for patching of Toils_Haul");
+                return;
+            }
+            var method = AccessTools.FirstMethod(innerDisplayClass, (m) => m.Name.Contains("<PlaceHauledThingInCell>b__0"));
+            if (method == null)
+            {
+                LogMessage(LogLevel.Error, "Failed to find method for patching of Toils_Haul");
+                return;
+            }
+            var transpiler = AccessTools.Method(typeof(Toils_Haul_Patch_PlacedThings), nameof(Toils_Haul_Patch_PlacedThings.Transpiler));
+            harmony.Patch(method, transpiler: new HarmonyMethod(transpiler));
         }
 
         public static UpgradeQualitySettings Settings;

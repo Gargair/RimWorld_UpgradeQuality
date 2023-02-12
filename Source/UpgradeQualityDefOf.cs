@@ -1,9 +1,4 @@
 ﻿using RimWorld;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using Verse;
 
 namespace UpgradeQuality
@@ -15,6 +10,12 @@ namespace UpgradeQuality
         {
             public static DesignationDef IncreaseQuality_Building;
             public static DesignationDef IncreaseQuality_Items;
+        }
+
+        [DefOf]
+        public static class Jobs
+        {
+            public static JobDef IncreaseQuality_Job;
         }
     }
 }

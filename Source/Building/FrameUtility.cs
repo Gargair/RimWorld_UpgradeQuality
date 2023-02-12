@@ -3,8 +3,6 @@ using RimWorld;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using Verse;
 
 namespace UpgradeQuality.Building
@@ -21,19 +19,19 @@ namespace UpgradeQuality.Building
             return frameDef;
         }
 
-        public static bool IsChangeBuildingFrame(ThingDef def)
+        public static bool IsUpgradeBuildingFrame(ThingDef def)
         {
             return def != null && frameCache.ContainsValue(def);
         }
 
         public static bool IsChangeBuildingFrame(Thing thing)
         {
-            return IsChangeBuildingFrame(thing?.def);
+            return IsUpgradeBuildingFrame(thing?.def);
         }
 
         public static bool IsChangeBuildingFrame(Thing thing, out Frame_UpgradeQuality_Building frame)
         {
-            if (IsChangeBuildingFrame(thing?.def))
+            if (IsUpgradeBuildingFrame(thing?.def))
             {
                 frame = (Frame_UpgradeQuality_Building)thing;
                 return true;

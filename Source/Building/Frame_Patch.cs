@@ -1,11 +1,8 @@
 ﻿using HarmonyLib;
 using RimWorld;
-using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Text;
-using System.Threading.Tasks;
 using Verse;
 
 namespace UpgradeQuality.Building
@@ -20,6 +17,22 @@ namespace UpgradeQuality.Building
             {
                 UpgradeQualityUtility.LogMessage(LogLevel.Debug, "Found custom Frame");
                 frame.CustomCompleteConstruction(worker);
+                return false;
+            }
+            return true;
+        }
+    }
+
+    [HarmonyPatch(typeof(Frame), nameof(Frame.FailConstruction))]
+    public class Frame_Patch_FailConstruction
+    {
+        static bool Prefix(Frame __instance, Pawn worker)
+        {
+            UpgradeQualityUtility.LogMessage(LogLevel.Debug, "FailConstruction Prefix");
+            if (FrameUtility.IsChangeBuildingFrame(__instance, out var frame))
+            {
+                UpgradeQualityUtility.LogMessage(LogLevel.Debug, "Found custom Frame");
+                frame.CustomFailConstruction(worker);
                 return false;
             }
             return true;
@@ -95,7 +108,7 @@ namespace UpgradeQuality.Building
         public static void Postfix(BuildableDef newEntDef, BuildableDef oldEntDef, ref bool __result)
         {
             var newThing = newEntDef as ThingDef;
-            if (newThing != null && FrameUtility.IsChangeBuildingFrame(newThing))
+            if (newThing != null && FrameUtility.IsUpgradeBuildingFrame(newThing))
             {
                 __result = false;
                 return;

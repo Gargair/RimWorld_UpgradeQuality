@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<Defs>
+  <RecipeDef>
+    <defName>RepairItem</defName>
+  </RecipeDef>
+
+  <RecipeDef>
+    <defName>UpgQlty_UpgradeQuality_Item</defName>
+    <label>upgrade item</label>
+    <description>Upgrade an item at an upgrade bench.</description>
+    <jobString>upgrading item</jobString>
+    <effectWorking>Cook</effectWorking>
+    <soundWorking>Recipe_Machining</soundWorking>
+    <allowMixingIngredients>false</allowMixingIngredients>
+    <unfinishedThingDef>UpgQlty_UnfinishedUpgrade</unfinishedThingDef>
+    <workAmount>1200</workAmount>
+    <targetCountAdjustment>5</targetCountAdjustment>
+    <workSkill>Crafting</workSkill>
+    <ingredients>
+      <li>
+        <filter>
+          <categories>
+            <li>Root</li>
+          </categories>
+        </filter>
+        <count>1</count>
+      </li>
+    </ingredients>
+    <fixedIngredientFilter>
+      <categories>
+        <li>Root</li>
+      </categories>
+    </fixedIngredientFilter>
+    <products />
+    <recipeUsers>
+      <li>UpgQlty_UpgradeBench</li>
+    </recipeUsers>
+  </RecipeDef>
+</Defs>

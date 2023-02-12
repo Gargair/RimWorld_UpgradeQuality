@@ -1,13 +1,9 @@
 ﻿using RimWorld;
-using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
-using UnityEngine;
-using Verse.AI.Group;
-using Verse.Sound;
 using Verse;
+using Verse.AI.Group;
 
 namespace UpgradeQuality.Building
 {
@@ -126,6 +122,22 @@ namespace UpgradeQuality.Building
         public List<ThingDefCountClass> CustomCostListAdjusted()
         {
             return NeededResources;
+        }
+
+        public void CustomFailConstruction(Pawn worker)
+        {
+            Map map = base.Map;
+            this.Destroy(DestroyMode.FailConstruction);
+            Lord lord = worker.GetLord();
+            if (lord != null)
+            {
+                lord.Notify_ConstructionFailed(worker, this, null);
+            }
+            MoteMaker.ThrowText(this.DrawPos, map, "TextMote_ConstructionFail".Translate(), 6f);
+            if (base.Faction == Faction.OfPlayer && this.WorkToBuild > 1400f)
+            {
+                Messages.Message("MessageConstructionFailed".Translate(this.LabelEntityToBuild, worker.LabelShort, worker.Named("WORKER")), new TargetInfo(base.Position, map, false), MessageTypeDefOf.NegativeEvent, true);
+            }
         }
     }
 }
