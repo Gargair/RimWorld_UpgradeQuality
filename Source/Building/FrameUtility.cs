@@ -24,14 +24,14 @@ namespace UpgradeQuality.Building
             return def != null && frameCache.ContainsValue(def);
         }
 
-        public static bool IsChangeBuildingFrame(Thing thing)
+        public static bool IsUpgradeBuildingFrame(Thing thing)
         {
-            return IsUpgradeBuildingFrame(thing?.def);
+            return thing != null && IsUpgradeBuildingFrame(thing.def);
         }
 
-        public static bool IsChangeBuildingFrame(Thing thing, out Frame_UpgradeQuality_Building frame)
+        public static bool IsUpgradeBuildingFrame(Thing thing, out Frame_UpgradeQuality_Building frame)
         {
-            if (IsUpgradeBuildingFrame(thing?.def))
+            if (IsUpgradeBuildingFrame(thing))
             {
                 frame = (Frame_UpgradeQuality_Building)thing;
                 return true;

@@ -13,7 +13,7 @@ namespace UpgradeQuality.Building
         static bool Prefix(Frame __instance, Pawn worker)
         {
             UpgradeQualityUtility.LogMessage(LogLevel.Debug, "CompleteConstruction Prefix");
-            if (FrameUtility.IsChangeBuildingFrame(__instance, out var frame))
+            if (FrameUtility.IsUpgradeBuildingFrame(__instance, out var frame))
             {
                 UpgradeQualityUtility.LogMessage(LogLevel.Debug, "Found custom Frame");
                 frame.CustomCompleteConstruction(worker);
@@ -29,7 +29,7 @@ namespace UpgradeQuality.Building
         static bool Prefix(Frame __instance, Pawn worker)
         {
             UpgradeQualityUtility.LogMessage(LogLevel.Debug, "FailConstruction Prefix");
-            if (FrameUtility.IsChangeBuildingFrame(__instance, out var frame))
+            if (FrameUtility.IsUpgradeBuildingFrame(__instance, out var frame))
             {
                 UpgradeQualityUtility.LogMessage(LogLevel.Debug, "Found custom Frame");
                 frame.CustomFailConstruction(worker);
@@ -44,7 +44,7 @@ namespace UpgradeQuality.Building
     {
         static bool Prefix(Frame __instance, ref List<ThingDefCountClass> __result)
         {
-            if (FrameUtility.IsChangeBuildingFrame(__instance, out var frame))
+            if (FrameUtility.IsUpgradeBuildingFrame(__instance, out var frame))
             {
                 __result = new List<ThingDefCountClass>();
                 foreach (var thingDefCountClass in frame.CustomCostListAdjusted())
@@ -75,7 +75,7 @@ namespace UpgradeQuality.Building
 
         static bool Prefix(Frame __instance, ref string __result)
         {
-            if (FrameUtility.IsChangeBuildingFrame(__instance, out var frame))
+            if (FrameUtility.IsUpgradeBuildingFrame(__instance, out var frame))
             {
                 StringBuilder stringBuilder = new StringBuilder();
                 stringBuilder.Append(BaseGetInspectString(__instance));
@@ -89,16 +89,14 @@ namespace UpgradeQuality.Building
     [HarmonyPatch(typeof(GenConstruct), "BlocksConstruction")]
     internal class ReplaceFrameNoBlock
     {
-        public static void Postfix(Thing constructible, Thing t, ref bool __result)
+        public static bool Prefix(Thing constructible, Thing t, ref bool __result)
         {
-            if (!__result)
-            {
-                return;
-            }
-            if (FrameUtility.IsChangeBuildingFrame(constructible))
+            if (FrameUtility.IsUpgradeBuildingFrame(constructible))
             {
                 __result = false;
+                return false;
             }
+            return true;
         }
     }
 
