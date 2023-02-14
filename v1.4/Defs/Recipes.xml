@@ -1,10 +1,6 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <Defs>
   <RecipeDef>
-    <defName>RepairItem</defName>
-  </RecipeDef>
-
-  <RecipeDef>
     <defName>UpgQlty_UpgradeQuality_Item</defName>
     <label>upgrade item</label>
     <description>Upgrade an item at an upgrade bench.</description>
