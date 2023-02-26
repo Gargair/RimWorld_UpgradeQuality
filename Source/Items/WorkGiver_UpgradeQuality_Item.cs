@@ -162,7 +162,8 @@ namespace UpgradeQuality.Items
                 {
                     return false;
                 }
-                if (item.TryGetComp<CompQuality>() == null)
+                var compQuality = item.TryGetComp<CompQuality>();
+                if (compQuality == null || compQuality.Quality >= QualityCategory.Legendary)
                 {
                     return false;
                 }

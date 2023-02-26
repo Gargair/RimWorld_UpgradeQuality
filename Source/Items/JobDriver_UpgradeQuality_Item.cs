@@ -75,7 +75,10 @@ namespace UpgradeQuality.Items
             };
             yield return toil;
             yield return Toils_Jump.JumpIf(gotoBillGiver, () => this.job.GetTargetQueue(TargetIndex.B).NullOrEmpty<LocalTargetInfo>());
-            cachedThingToUpgrade = job.GetTargetQueue(TargetIndex.B).FirstOrDefault().Thing;
+            if (cachedThingToUpgrade == null)
+            {
+                cachedThingToUpgrade = job.GetTargetQueue(TargetIndex.B).FirstOrDefault().Thing;
+            }
             foreach (Toil toil2 in JobDriver_DoBill.CollectIngredientsToils(TargetIndex.B, TargetIndex.A, TargetIndex.C, false, true, false))
             {
                 yield return toil2;
