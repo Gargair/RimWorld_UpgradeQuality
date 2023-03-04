@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <Defs>
-
   <ThingDef ParentName="BenchBase">
     <defName>UpgQlty_UpgradeBench</defName>
     <label>upgrade bench</label>
@@ -59,5 +58,4 @@
       <li>PlaceWorker_ShowFacilitiesConnections</li>
     </placeWorkers>
   </ThingDef>
-
 </Defs>
