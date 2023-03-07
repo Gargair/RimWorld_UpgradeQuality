@@ -47,13 +47,17 @@ namespace UpgradeQuality.Building
             if (FrameUtility.IsUpgradeBuildingFrame(__instance, out var frame))
             {
                 __result = new List<ThingDefCountClass>();
-                foreach (var thingDefCountClass in frame.CustomCostListAdjusted())
+                var neededResouces = frame.CustomCostListAdjusted();
+                if (neededResouces != null)
                 {
-                    int countInContainer = __instance.resourceContainer.TotalStackCountOfDef(thingDefCountClass.thingDef);
-                    int countNeeded = thingDefCountClass.count - countInContainer;
-                    if (countNeeded > 0)
+                    foreach (var thingDefCountClass in neededResouces)
                     {
-                        __result.Add(new ThingDefCountClass(thingDefCountClass.thingDef, countNeeded));
+                        int countInContainer = __instance.resourceContainer.TotalStackCountOfDef(thingDefCountClass.thingDef);
+                        int countNeeded = thingDefCountClass.count - countInContainer;
+                        if (countNeeded > 0)
+                        {
+                            __result.Add(new ThingDefCountClass(thingDefCountClass.thingDef, countNeeded));
+                        }
                     }
                 }
                 return false;
