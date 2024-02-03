@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8" ?>
+<?xml version="1.0" encoding="utf-8"?>
 <LanguageData>
   <UpgQlty.ModName>Upgrade Quality</UpgQlty.ModName>
   <UpgQlty.Labels.UpgradeTo>Upgrade to {0}</UpgQlty.Labels.UpgradeTo>
@@ -8,9 +8,13 @@
   <UpgQlty.Labels.UpgradingBuilding>Upgrading</UpgQlty.Labels.UpgradingBuilding>
   <UpgQlty.Labels.Settings.MaterialMultiplier>Material multiplier</UpgQlty.Labels.Settings.MaterialMultiplier>
   <UpgQlty.Labels.Settings.MaterialsNeededFor>from {0} to {1}: {2}</UpgQlty.Labels.Settings.MaterialsNeededFor>
+  <UpgQlty.Labels.Settings.IsKeepOptionEnabled>Enable Keep Quality option</UpgQlty.Labels.Settings.IsKeepOptionEnabled>
 
   <UpgQlty.Messages.NoUpgradeItems>No items to upgrade found.</UpgQlty.Messages.NoUpgradeItems>
 
   <UpgQlty.Tooltips.UpgradeBuilding>Upgrade Quality.</UpgQlty.Tooltips.UpgradeBuilding>
-  <UpgQlty.Tooltips.Settings.MaterialsNeededTooltip>The amount of material needed to be gathered in relation to the item's original resource cost.\n\nFor example, if an item took 100 wood to craft and this value was .1, then 10 wood would be used for the quality increase task at the item's current quality level.</UpgQlty.Tooltips.Settings.MaterialsNeededTooltip>
+  <UpgQlty.Tooltips.Settings.MaterialsNeededTooltip>The amount of material needed to be gathered in
+    relation to the item's original resource cost.\n\nFor example, if an item took 100 wood to craft
+    and this value was .1, then 10 wood would be used for the quality increase task at the item's
+    current quality level.</UpgQlty.Tooltips.Settings.MaterialsNeededTooltip>
 </LanguageData>

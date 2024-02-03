@@ -168,7 +168,7 @@ namespace UpgradeQuality.Building
                     UpgradeQualityUtility.LogMessage(LogLevel.Debug, "Found Frame without designation.");
                     CancelUpgrade();
                 }
-                if (!Find.TickManager.slower.ForcedNormalSpeed && Find.TickManager.TicksGame % 600 == 0)
+                if (this.parent.HitPoints >= this.parent.MaxHitPoints && Find.TickManager.TicksGame % 600 == 0)
                 {
                     if (keepQuality && CompQuality != null && CompQuality.Quality < desiredQuality)
                     {

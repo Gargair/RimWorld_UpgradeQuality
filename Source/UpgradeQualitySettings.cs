@@ -12,6 +12,7 @@ namespace UpgradeQuality
         public float Factor_Good_Excellent = 4;
         public float Factor_Excellent_Masterwork = 5;
         public float Factor_Masterwork_Legendary = 6;
+        public bool IsKeepOptionEnabled = false;
 
         public override void ExposeData()
         {
@@ -22,6 +23,7 @@ namespace UpgradeQuality
             Scribe_Values.Look(ref Factor_Good_Excellent, "Factor_Good_Excellent", 4);
             Scribe_Values.Look(ref Factor_Excellent_Masterwork, "Factor_Excellent_Masterwork", 5);
             Scribe_Values.Look(ref Factor_Masterwork_Legendary, "Factor_Masterwork_Legendary", 6);
+            Scribe_Values.Look(ref IsKeepOptionEnabled, "IsKeepOptionEnabled", false);
         }
 
         public void DoWindowContents(Rect canvas)
@@ -44,13 +46,16 @@ namespace UpgradeQuality
             BuildMaterialSlider(list, ref Factor_Good_Excellent, goodString, excellentString);
             BuildMaterialSlider(list, ref Factor_Excellent_Masterwork, excellentString, masterworkString);
             BuildMaterialSlider(list, ref Factor_Masterwork_Legendary, masterworkString, legendaryString, false);
+            list.Gap(1f);
+            var checkBoxRect = list.GetRect(Text.LineHeight);
+            Widgets.CheckboxLabeled(checkBoxRect, "UpgQlty.Labels.Settings.IsKeepOptionEnabled".Translate(), ref IsKeepOptionEnabled);
 
             list.End();
         }
 
         private void BuildSlider(Listing_Standard listing_Standard, ref float valueRef, float minValue, float maxValue, TaggedString labelText, TaggedString tooltipText, bool withGap)
         {
-            var contentRect = listing_Standard.GetRect(Text.LineHeight + 50f);
+            var contentRect = listing_Standard.GetRect(Text.LineHeight + 70f);
             var topRect = contentRect.TopPartPixels(Text.LineHeight);
             var labelRect = topRect.LeftHalf();
             var textInput = topRect.RightHalf();

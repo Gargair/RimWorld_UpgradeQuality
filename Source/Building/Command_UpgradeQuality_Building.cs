@@ -48,7 +48,10 @@ namespace UpgradeQuality.Building
             foreach (var cat in RenderQualityCategories)
             {
                 yield return new FloatMenuOption("UpgQlty.Labels.UpgradeTo".Translate(cat.GetLabel()), () => ChangeTo(cat, false));
-                yield return new FloatMenuOption("UpgQlty.Labels.UpgradeToKeep".Translate(cat.GetLabel()), () => ChangeTo(cat, true));
+                if (UpgradeQuality.Settings.IsKeepOptionEnabled)
+                {
+                    yield return new FloatMenuOption("UpgQlty.Labels.UpgradeToKeep".Translate(cat.GetLabel()), () => ChangeTo(cat, true));
+                }
             }
         }
 
