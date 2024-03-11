@@ -79,7 +79,7 @@ namespace UpgradeQuality.Items
                         return null;
                     }
                     var unfinishedThing = FindUnfinishedUpgradeThing(pawn, bench, bill);
-                    if(unfinishedThing != null)
+                    if (unfinishedThing != null)
                     {
                         return StartNewUpgradeJob(bill, billGiver, unfinishedThing, new List<ThingCount>());
                     }
@@ -127,7 +127,7 @@ namespace UpgradeQuality.Items
             {
                 List<Thing> list = region.ListerThings.ThingsInGroup(ThingRequestGroup.HaulableAlways);
                 var unfinishedThings = list.Where(itemValidator);
-                if(unfinishedThings.Count() > 0)
+                if (unfinishedThings.Count() > 0)
                 {
                     foundUnfinishedThing = unfinishedThings.First();
                     return true;
@@ -158,10 +158,10 @@ namespace UpgradeQuality.Items
                 {
                     return false;
                 }
-                if (item.CostListAdjusted().Count == 0)
-                {
-                    return false;
-                }
+                //if (item.CostListAdjusted().Count == 0)
+                //{
+                //    return false;
+                //}
                 var compQuality = item.TryGetComp<CompQuality>();
                 if (compQuality == null || compQuality.Quality >= QualityCategory.Legendary)
                 {
@@ -201,7 +201,7 @@ namespace UpgradeQuality.Items
         private static bool TryFindBestBillIngredients(Bill bill, Pawn pawn, Thing billGiver, List<ThingCount> chosen, Thing itemDamaged)
         {
             chosen.Clear();
-            List<ThingDefCount> neededIngreds = CalculateTotalIngredients(itemDamaged);
+            List<ThingDefCountQuality> neededIngreds = CalculateTotalIngredients(itemDamaged);
 
             if (neededIngreds.NullOrEmpty())
             {
@@ -226,7 +226,11 @@ namespace UpgradeQuality.Items
                 {
                     return false;
                 }
-                if (!neededIngreds.Any((ThingDefCount ingred) => ingred.ThingDef == t.def))
+                if (!neededIngreds.Any((ThingDefCountQuality ingred) => ingred.ThingDef == t.def))
+                {
+                    return false;
+                }
+                if(t == itemDamaged)
                 {
                     return false;
                 }
@@ -267,25 +271,31 @@ namespace UpgradeQuality.Items
             return foundAll;
         }
 
-        internal static List<ThingDefCount> CalculateTotalIngredients(Thing itemDamaged)
+        internal static List<ThingDefCountQuality> CalculateTotalIngredients(Thing itemDamaged)
         {
             var list = itemDamaged.CostListAdjusted();
             var qComp = itemDamaged.TryGetComp<CompQuality>();
             if (qComp == null)
             {
-                return new List<ThingDefCount>();
+                return new List<ThingDefCountQuality>();
+            }
+            if (list.NullOrEmpty())
+            {
+                var ret = new List<ThingDefCountQuality>();
+                ret.Add(new ThingDefCountQuality(itemDamaged.def, 1, new QualityRange(qComp.Quality, qComp.Quality)));
+                return ret;
             }
             var mult = UpgradeQualityUtility.GetMultiplier(qComp.Quality);
-            return list.Select(t => new ThingDefCount(t.thingDef, Mathf.CeilToInt(t.count * mult))).ToList();
+            return list.Select(t => new ThingDefCountQuality(t.thingDef, Mathf.CeilToInt(t.count * mult))).ToList();
         }
 
-        private static bool TryFindBestBillIngredientsInSet_NoMix(List<Thing> availableThings, List<ThingDefCount> neededIngreds, List<ThingCount> chosen)
+        private static bool TryFindBestBillIngredientsInSet_NoMix(List<Thing> availableThings, List<ThingDefCountQuality> neededIngreds, List<ThingCount> chosen)
         {
             chosen.Clear();
             var AvailableCounts = new DefCountList();
             var AssignedThings = new HashSet<Thing>();
             AvailableCounts.GenerateFrom(availableThings);
-            foreach (ThingDefCount thingDefCount in neededIngreds)
+            foreach (ThingDefCountQuality thingDefCount in neededIngreds)
             {
                 bool flag = false;
                 for (int i = 0; i < AvailableCounts.Count; i++)
@@ -299,17 +309,32 @@ namespace UpgradeQuality.Items
                             bool flag3 = thing.def != AvailableCounts.GetDef(i) || AssignedThings.Contains(thing);
                             if (!flag3)
                             {
-                                int num2 = Mathf.Min(Mathf.FloorToInt(num), thing.stackCount);
-                                ThingCountUtility.AddToList(chosen, thing, num2);
-                                num -= (float)num2;
-                                AssignedThings.Add(thing);
-                                bool flag4 = (double)num < 0.001;
-                                if (flag4)
+                                var shouldAdd = false;
+                                if (thing.TryGetQuality(out QualityCategory qCat))
                                 {
-                                    flag = true;
-                                    float val = AvailableCounts.GetCount(i) - (float)thingDefCount.Count;
-                                    AvailableCounts.SetCount(i, val);
-                                    break;
+                                    if (thingDefCount.Range.Includes(qCat))
+                                    {
+                                        shouldAdd = true;
+                                    }
+                                }
+                                else if (thingDefCount.Range == QualityRange.All)
+                                {
+                                    shouldAdd = true;
+                                }
+                                if (shouldAdd)
+                                {
+                                    int num2 = Mathf.Min(Mathf.FloorToInt(num), thing.stackCount);
+                                    ThingCountUtility.AddToList(chosen, thing, num2);
+                                    num -= (float)num2;
+                                    AssignedThings.Add(thing);
+                                    bool flag4 = (double)num < 0.001;
+                                    if (flag4)
+                                    {
+                                        flag = true;
+                                        float val = AvailableCounts.GetCount(i) - (float)thingDefCount.Count;
+                                        AvailableCounts.SetCount(i, val);
+                                        break;
+                                    }
                                 }
                             }
                         }
