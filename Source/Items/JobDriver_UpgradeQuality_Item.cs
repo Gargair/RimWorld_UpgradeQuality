@@ -233,14 +233,14 @@ namespace UpgradeQuality.Items
                     }
                     return;
                 }
-                if (curJob.bill.recipe.WorkAmountTotal((unfinishedThing != null) ? unfinishedThing.Stuff : null) >= 10000f && products.Count > 0)
-                {
-                    TaleRecorder.RecordTale(TaleDefOf.CompletedLongCraftingProject, new object[]
-                    {
-                        actor,
-                        products[0].GetInnerIfMinified().def
-                    });
-                }
+                //if (curJob.bill.recipe.WorkAmountTotal((unfinishedThing != null) ? unfinishedThing.Stuff : null) >= 10000f && products.Count > 0)
+                //{
+                //    TaleRecorder.RecordTale(TaleDefOf.CompletedLongCraftingProject, new object[]
+                //    {
+                //        actor,
+                //        products[0].GetInnerIfMinified().def
+                //    });
+                //}
                 if (products.Any<Thing>())
                 {
                     Find.QuestManager.Notify_ThingsProduced(actor, products);
@@ -279,7 +279,7 @@ namespace UpgradeQuality.Items
                 }
                 else if (curJob.bill.GetStoreMode() == BillStoreModeDefOf.SpecificStockpile)
                 {
-                    StoreUtility.TryFindBestBetterStoreCellForIn(products[0], actor, actor.Map, StoragePriority.Unstored, actor.Faction, curJob.bill.GetStoreZone().slotGroup, out invalid, true);
+                    StoreUtility.TryFindBestBetterStoreCellForIn(products[0], actor, actor.Map, StoragePriority.Unstored, actor.Faction, curJob.bill.GetSlotGroup(), out invalid, true);
                 }
                 else
                 {

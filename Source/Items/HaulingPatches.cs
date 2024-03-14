@@ -45,6 +45,7 @@ namespace UpgradeQuality.Items
             }
             else
             {
+                UpgradeQualityUtility.LogMessage(LogLevel.Error, "Failed to get JobDefDoBillIndex");
                 foreach (var instr in instructions)
                 {
                     yield return instr;

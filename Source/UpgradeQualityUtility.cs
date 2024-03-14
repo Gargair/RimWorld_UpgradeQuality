@@ -15,7 +15,7 @@ namespace UpgradeQuality
     {
         static UpgradeQualityUtility()
         {
-            LogMessage(LogLevel.Information, "Welcome to pointless log spam");
+            //LogMessage(LogLevel.Information, "Welcome to pointless log spam");
             var upgradeBuildingCompNever = new CompProperties_UpgradeQuality_Building(TickerType.Never);
             var upgradeBuildingCompNormal = new CompProperties_UpgradeQuality_Building(TickerType.Normal);
             var upgradeBuildingCompRare = new CompProperties_UpgradeQuality_Building(TickerType.Rare);
@@ -52,7 +52,8 @@ namespace UpgradeQuality
             var harmony = new Harmony("rakros.rimworld.upgradequality");
             harmony.PatchAll();
             FrameUtility.AddCustomFrames();
-            var innerDisplayClass = AccessTools.FirstInner(typeof(Toils_Haul), (inner) => inner.Name.Contains("<>c__DisplayClass6_0"));
+            // Needs the delegate from the Toils_Haul.PlaceHauledThingInCell Method to inject our job in the check for UpdateJobWithPlacedThings action
+            var innerDisplayClass = AccessTools.FirstInner(typeof(Toils_Haul), (inner) => inner.Name.Contains("<>c__DisplayClass8_0"));
             if (innerDisplayClass == null)
             {
                 LogMessage(LogLevel.Error, "Failed to find type for patching of Toils_Haul");

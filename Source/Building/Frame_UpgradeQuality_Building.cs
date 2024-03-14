@@ -49,16 +49,10 @@ namespace UpgradeQuality.Building
             for (int i = 0; i < list.Count; i++)
             {
                 ThingDefCountClass need = list[i];
-                int num = need.count;
-                IEnumerable<ThingDefCountClass> source = this.MaterialsNeeded();
-                foreach (ThingDefCountClass thingDefCountClass in source.Where(needed => needed.thingDef == need.thingDef))
-                {
-                    num -= thingDefCountClass.count;
-                }
                 stringBuilder.AppendLine(string.Concat(new object[]
                 {
                     need.thingDef.LabelCap + ": ",
-                    num,
+                    this.resourceContainer.TotalStackCountOfDef(need.thingDef),
                     " / ",
                     need.count
                 }));
@@ -97,7 +91,6 @@ namespace UpgradeQuality.Building
 
             if (qualityComp.Quality >= desiredQuality)
             {
-                // TODO: Send Notification
                 if (keepQuality)
                 {
                     comp.SetDesiredQualityTo(desiredQuality, keepQuality);
@@ -127,7 +120,23 @@ namespace UpgradeQuality.Building
         public void CustomFailConstruction(Pawn worker)
         {
             Map map = base.Map;
+            var qualityComp = thingToChange.GetComp<CompQuality>();
+            var desiredQuality = DesiredQuality ?? QualityCategory.Awful;
+            var keepQuality = KeepQuality.HasValue ? KeepQuality.Value : false;
+            var comp = Comp;
             this.Destroy(DestroyMode.FailConstruction);
+            // The destroy implicitly cancels the upgrade.
+            if (qualityComp.Quality >= desiredQuality)
+            {
+                if (keepQuality)
+                {
+                    comp.SetDesiredQualityTo(desiredQuality, keepQuality);
+                }
+            }
+            else
+            {
+                comp.SetDesiredQualityTo(desiredQuality, keepQuality);
+            }
             Lord lord = worker.GetLord();
             if (lord != null)
             {

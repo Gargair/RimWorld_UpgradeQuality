@@ -3,8 +3,10 @@
   <Excluded>
     <exclude>.git</exclude>
     <exclude>.vs</exclude>
+    <exclude>Shared\Textures\UI\DesQualityUp.dds</exclude>
+    <exclude>Shared\Textures\UI\QualityUp.dds</exclude>
     <exclude>Source</exclude>
-    <exclude>Textures\UI\DesQualityUp.dds</exclude>
-    <exclude>Textures\UI\QualityUp.dds</exclude>
+    <exclude>v1.5\Assemblies\UpgradeQuality.pdb</exclude>
+    <exclude>v1.4\Assemblies\UpgradeQuality.pdb</exclude>
   </Excluded>
 </Configuration>

@@ -39,8 +39,8 @@ namespace UpgradeQuality.Building
         }
     }
 
-    [HarmonyPatch(typeof(Frame), nameof(Frame.MaterialsNeeded))]
-    public class Frame_Patch_MaterialsNeeded
+    [HarmonyPatch(typeof(Frame), nameof(Frame.TotalMaterialCost))]
+    public class Frame_Patch_TotalMaterialCost
     {
         static bool Prefix(Frame __instance, ref List<ThingDefCountClass> __result)
         {
@@ -50,15 +50,7 @@ namespace UpgradeQuality.Building
                 var neededResouces = frame.CustomCostListAdjusted();
                 if (neededResouces != null)
                 {
-                    foreach (var thingDefCountClass in neededResouces)
-                    {
-                        int countInContainer = __instance.resourceContainer.TotalStackCountOfDef(thingDefCountClass.thingDef);
-                        int countNeeded = thingDefCountClass.count - countInContainer;
-                        if (countNeeded > 0)
-                        {
-                            __result.Add(new ThingDefCountClass(thingDefCountClass.thingDef, countNeeded));
-                        }
-                    }
+                    __result = neededResouces;
                 }
                 return false;
             }
