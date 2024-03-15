@@ -5,7 +5,7 @@ using Verse.AI.Group;
 
 namespace UpgradeQuality.Building
 {
-    internal class Frame_UpgradeQuality_Building : Frame
+    public class Frame_UpgradeQuality_Building : Frame
     {
         public ThingWithComps thingToChange;
         public QualityCategory? DesiredQuality

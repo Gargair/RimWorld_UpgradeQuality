@@ -4,7 +4,7 @@ using Verse;
 
 namespace UpgradeQuality.Building
 {
-    internal class Comp_UpgradeQuality_Building : ThingComp
+    public class Comp_UpgradeQuality_Building : ThingComp
     {
         public QualityCategory desiredQuality;
         public List<ThingDefCountClass> neededResources;
@@ -155,32 +155,34 @@ namespace UpgradeQuality.Building
             }
         }
 
-        public override void CompTick()
+        public bool IsStillActive()
         {
-            base.CompTick();
-            if (DesignationManager != null && !HasUpgradeDesignation)
+            if (HasUpgradeDesignation)
             {
-                if (placedFrame != null)
-                {
-                    UpgradeQualityUtility.LogMessage(LogLevel.Debug, "Found Frame without designation.");
-                    CancelUpgrade();
-                }
-                if (this.parent.HitPoints >= this.parent.MaxHitPoints && Find.TickManager.TicksGame % 600 == 0)
-                {
-                    if (keepQuality && CompQuality != null && CompQuality.Quality < desiredQuality)
-                    {
-                        SetDesiredQualityTo(desiredQuality, keepQuality);
-                    }
-                }
+                return true;
             }
-            if (Props.originalTickerType == TickerType.Rare && Find.TickManager.TicksGame % 250 == 0)
+            if (placedFrame != null)
             {
-                parent.TickRare();
+                UpgradeQualityUtility.LogMessage(LogLevel.Debug, "Found Frame without designation.");
+                CancelUpgrade();
             }
-            else if (Props.originalTickerType == TickerType.Long && Find.TickManager.TicksGame % 2000 == 0)
+            if (keepQuality && CompQuality != null && CompQuality.Quality < desiredQuality)
             {
-                parent.TickLong();
+                return true;
+            }
+            return false;
+        }
+
+        public void CheckAndDoUpgrade()
+        {
+            if (!HasUpgradeDesignation && this.parent.HitPoints >= this.parent.MaxHitPoints)
+            {
+                if (keepQuality && CompQuality != null && CompQuality.Quality < desiredQuality)
+                {
+                    SetDesiredQualityTo(desiredQuality, keepQuality);
+                }
             }
         }
+
     }
 }

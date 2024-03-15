@@ -28,6 +28,7 @@ namespace UpgradeQuality.Building
         private static void ChangeTo(QualityCategory cat, bool keepQuality)
         {
             List<object> list = Find.Selector.SelectedObjects.FindAll((object o) => typeof(ThingWithComps).IsAssignableFrom(o.GetType()));
+            var tracker = Current.Game.GetComponent<GameComponent_ActiveQualityCompTracker>();
             foreach (object item in list)
             {
                 if (item is ThingWithComps thing)
@@ -36,6 +37,7 @@ namespace UpgradeQuality.Building
                     if (upgradeQualityComp != null)
                     {
                         upgradeQualityComp.SetDesiredQualityTo(cat, keepQuality);
+                        tracker?.AddComponent(upgradeQualityComp);
                     }
                 }
             }

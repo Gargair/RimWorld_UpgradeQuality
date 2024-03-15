@@ -15,36 +15,15 @@ namespace UpgradeQuality
     {
         static UpgradeQualityUtility()
         {
-            var upgradeBuildingCompNever = new CompProperties_UpgradeQuality_Building(TickerType.Never);
-            var upgradeBuildingCompNormal = new CompProperties_UpgradeQuality_Building(TickerType.Normal);
-            var upgradeBuildingCompRare = new CompProperties_UpgradeQuality_Building(TickerType.Rare);
-            var upgradeBuildingCompLong = new CompProperties_UpgradeQuality_Building(TickerType.Long);
-            foreach (var thingDef in DefDatabase<ThingDef>.AllDefs
-                        .Where(thingDef => thingDef.HasComp(typeof(CompQuality))))
+            var upgradeBuildingCompProps = new CompProperties_UpgradeQuality_Building();
+            foreach (var thingDef in DefDatabase<ThingDef>.AllDefs.Where(thingDef => thingDef.HasComp(typeof(CompQuality))))
             {
                 if (thingDef.building != null || thingDef.Minifiable)
                 {
-                    switch (thingDef.tickerType)
-                    {
-                        case TickerType.Never:
-                            thingDef.comps.Add(upgradeBuildingCompNever);
-                            thingDef.tickerType = TickerType.Normal;
-                            break;
-                        case TickerType.Normal:
-                            thingDef.comps.Add(upgradeBuildingCompNormal);
-                            break;
-                        case TickerType.Rare:
-                            thingDef.comps.Add(upgradeBuildingCompRare);
-                            thingDef.tickerType = TickerType.Normal;
-                            break;
-                        case TickerType.Long:
-                            thingDef.comps.Add(upgradeBuildingCompLong);
-                            thingDef.tickerType = TickerType.Normal;
-                            break;
-                    }
+                    thingDef.comps.Add(upgradeBuildingCompProps);
                 }
-
             }
+
             LogMessage(LogLevel.Debug, "Finished adding comps to thingDefs");
             var harmony = new Harmony("rakros.rimworld.upgradequality");
             harmony.PatchAll();
