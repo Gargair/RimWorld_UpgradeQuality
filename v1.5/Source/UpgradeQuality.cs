@@ -6,7 +6,6 @@ namespace UpgradeQuality
     public class UpgradeQuality : Mod
     {
         public UpgradeQuality(ModContentPack content) :base(content) {
-            //UpgradeQualityUtility.LogMessage(LogLevel.Information, "Starting up");
             Settings = GetSettings<UpgradeQualitySettings>();
         }
 

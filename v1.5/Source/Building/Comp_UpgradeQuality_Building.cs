@@ -18,10 +18,7 @@ namespace UpgradeQuality.Building
         private bool needDesignationAfterSpawn = false;
         private CompQuality CompQuality => parent?.GetComp<CompQuality>();
 
-        public Comp_UpgradeQuality_Building()
-        {
-
-        }
+        public Comp_UpgradeQuality_Building() { }
 
         public override IEnumerable<Gizmo> CompGetGizmosExtra()
         {

@@ -1,8 +1,6 @@
 ﻿using HarmonyLib;
 using RimWorld;
 using System.Collections.Generic;
-using System.Runtime.CompilerServices;
-using System.Text;
 using Verse;
 
 namespace UpgradeQuality.Building
@@ -47,35 +45,11 @@ namespace UpgradeQuality.Building
             if (FrameUtility.IsUpgradeBuildingFrame(__instance, out var frame))
             {
                 __result = new List<ThingDefCountClass>();
-                var neededResouces = frame.CustomCostListAdjusted();
+                var neededResouces = frame.NeededResources;
                 if (neededResouces != null)
                 {
                     __result = neededResouces;
                 }
-                return false;
-            }
-            return true;
-        }
-    }
-
-
-
-    [HarmonyPatch(typeof(Frame), nameof(Frame.GetInspectString))]
-    internal static class Frame_Patch_GetInspectString
-    {
-
-        [HarmonyReversePatch]
-        [HarmonyPatch(typeof(ThingWithComps), nameof(ThingWithComps.GetInspectString))]
-        [MethodImpl(MethodImplOptions.NoInlining)]
-        static string BaseGetInspectString(Frame instance) { return null; }
-
-        static bool Prefix(Frame __instance, ref string __result)
-        {
-            if (FrameUtility.IsUpgradeBuildingFrame(__instance, out var frame))
-            {
-                StringBuilder stringBuilder = new StringBuilder();
-                stringBuilder.Append(BaseGetInspectString(__instance));
-                __result = frame.CustomGetInspectString(stringBuilder);
                 return false;
             }
             return true;

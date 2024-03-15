@@ -1,7 +1,5 @@
 ﻿using RimWorld;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using Verse;
 using Verse.AI.Group;
 
@@ -39,26 +37,6 @@ namespace UpgradeQuality.Building
         {
             base.Notify_KilledLeavingsLeft(leavings);
             Comp?.CancelUpgrade();
-        }
-
-        public string CustomGetInspectString(StringBuilder stringBuilder)
-        {
-            stringBuilder.AppendLineIfNotEmpty();
-            stringBuilder.AppendLine("ContainedResources".Translate() + ":");
-            List<ThingDefCountClass> list = this.CustomCostListAdjusted();
-            for (int i = 0; i < list.Count; i++)
-            {
-                ThingDefCountClass need = list[i];
-                stringBuilder.AppendLine(string.Concat(new object[]
-                {
-                    need.thingDef.LabelCap + ": ",
-                    this.resourceContainer.TotalStackCountOfDef(need.thingDef),
-                    " / ",
-                    need.count
-                }));
-            }
-            stringBuilder.Append("WorkLeft".Translate() + ": " + this.WorkLeft.ToStringWorkAmount());
-            return stringBuilder.ToString();
         }
 
         public override void ExposeData()
@@ -110,11 +88,6 @@ namespace UpgradeQuality.Building
                     thingToChange.def
                 });
             }
-        }
-
-        public List<ThingDefCountClass> CustomCostListAdjusted()
-        {
-            return NeededResources;
         }
 
         public void CustomFailConstruction(Pawn worker)

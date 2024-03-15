@@ -15,7 +15,6 @@ namespace UpgradeQuality
     {
         static UpgradeQualityUtility()
         {
-            //LogMessage(LogLevel.Information, "Welcome to pointless log spam");
             var upgradeBuildingCompNever = new CompProperties_UpgradeQuality_Building(TickerType.Never);
             var upgradeBuildingCompNormal = new CompProperties_UpgradeQuality_Building(TickerType.Normal);
             var upgradeBuildingCompRare = new CompProperties_UpgradeQuality_Building(TickerType.Rare);
@@ -23,10 +22,8 @@ namespace UpgradeQuality
             foreach (var thingDef in DefDatabase<ThingDef>.AllDefs
                         .Where(thingDef => thingDef.HasComp(typeof(CompQuality))))
             {
-                //LogMessage(LogLevel.Debug, "Checking", thingDef.defName);
                 if (thingDef.building != null || thingDef.Minifiable)
                 {
-                    //LogMessage(LogLevel.Debug, "Adding comp to", thingDef.defName);
                     switch (thingDef.tickerType)
                     {
                         case TickerType.Never:

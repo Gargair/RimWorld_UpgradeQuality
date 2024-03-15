@@ -43,8 +43,6 @@ namespace UpgradeQuality.Building
 
         private static IEnumerable<FloatMenuOption> GetFloatingOptions()
         {
-            //var allSelectedThings = Find.Selector.SelectedObjects.FindAll((object o) => typeof(ThingWithComps).IsAssignableFrom(o.GetType())).Cast<ThingWithComps>();
-
             foreach (var cat in RenderQualityCategories)
             {
                 yield return new FloatMenuOption("UpgQlty.Labels.UpgradeTo".Translate(cat.GetLabel()), () => ChangeTo(cat, false));

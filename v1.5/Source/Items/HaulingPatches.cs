@@ -5,13 +5,13 @@ using System.Linq;
 
 namespace UpgradeQuality.Items
 {
-    //[HarmonyPatch(typeof("Verse.AI.Toils_Haul/'<>c__DisplayClass6_0'"), "'<PlaceHauledThingInCell>b__0'")]
+    //[HarmonyPatch(typeof("Verse.AI.Toils_Haul/'<>c__DisplayClass8_0'"), "'<PlaceHauledThingInCell>b__0'")]
+    // Registered in UpgradeQualityUtility
     public class Toils_Haul_Patch_PlacedThings
     {
         public static IEnumerable<CodeInstruction> Transpiler(IEnumerable<CodeInstruction> instructions)
         {
             var get_DoBill = AccessTools.Field(typeof(JobDefOf), nameof(JobDefOf.DoBill));
-            //var get_MyJobDefOf = AccessTools.Field(typeof(UpgradeQualityDefOf.Jobs), nameof(UpgradeQualityDefOf.Jobs.IncreaseQuality_Job));
             var oldInstructions = instructions.ToList();
             var JobDefDoBillIndex = -1;
             for (int i = 0; i < oldInstructions.Count; i++)
