@@ -66,18 +66,7 @@ namespace UpgradeQuality.Building
                 this.Destroy(DestroyMode.Vanish);
             }
             // The destroy implicitly cancels the upgrade.
-
-            if (qualityComp.Quality >= desiredQuality)
-            {
-                if (keepQuality)
-                {
-                    comp.SetDesiredQualityTo(desiredQuality, keepQuality);
-                }
-            }
-            else
-            {
-                comp.SetDesiredQualityTo(desiredQuality, keepQuality);
-            }
+            comp.SetDesiredQualityTo(desiredQuality, keepQuality);
 
             worker.records.Increment(RecordDefOf.ThingsConstructed);
             if (thingToChange != null && thingToChange.GetStatValue(StatDefOf.WorkToBuild, true, -1) >= 9500f)
@@ -93,23 +82,12 @@ namespace UpgradeQuality.Building
         public void CustomFailConstruction(Pawn worker)
         {
             Map map = base.Map;
-            var qualityComp = thingToChange.GetComp<CompQuality>();
             var desiredQuality = DesiredQuality ?? QualityCategory.Awful;
             var keepQuality = KeepQuality.HasValue ? KeepQuality.Value : false;
             var comp = Comp;
             this.Destroy(DestroyMode.FailConstruction);
             // The destroy implicitly cancels the upgrade.
-            if (qualityComp.Quality >= desiredQuality)
-            {
-                if (keepQuality)
-                {
-                    comp.SetDesiredQualityTo(desiredQuality, keepQuality);
-                }
-            }
-            else
-            {
-                comp.SetDesiredQualityTo(desiredQuality, keepQuality);
-            }
+            comp.SetDesiredQualityTo(desiredQuality, keepQuality);
             Lord lord = worker.GetLord();
             if (lord != null)
             {

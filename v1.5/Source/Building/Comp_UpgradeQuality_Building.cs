@@ -17,6 +17,7 @@ namespace UpgradeQuality.Building
         private bool HasUpgradeDesignation => DesignationManager?.DesignationOn(parent, UpgradeQualityDefOf.Designations.IncreaseQuality_Building) != null;
         private bool needDesignationAfterSpawn = false;
         private CompQuality CompQuality => parent?.GetComp<CompQuality>();
+        private GameComponent_ActiveQualityCompTracker tracker = Current.Game.GetComponent<GameComponent_ActiveQualityCompTracker>();
 
         public Comp_UpgradeQuality_Building() { }
 
@@ -54,11 +55,13 @@ namespace UpgradeQuality.Building
                 {
                     DesignationManager.AddDesignation(new Designation(parent, UpgradeQualityDefOf.Designations.IncreaseQuality_Building));
                 }
+                tracker?.AddComponent(this);
             }
             else if (keepQuality)
             {
                 this.desiredQuality = desiredQuality;
                 this.keepQuality = keepQuality;
+                tracker?.AddComponent(this);
             }
             else
             {
@@ -166,7 +169,11 @@ namespace UpgradeQuality.Building
                 UpgradeQualityUtility.LogMessage(LogLevel.Debug, "Found Frame without designation.");
                 CancelUpgrade();
             }
-            if (keepQuality && CompQuality != null && CompQuality.Quality < desiredQuality)
+            if(keepQuality)
+            {
+                return true;
+            }
+            if (CompQuality != null && CompQuality.Quality < desiredQuality)
             {
                 return true;
             }
