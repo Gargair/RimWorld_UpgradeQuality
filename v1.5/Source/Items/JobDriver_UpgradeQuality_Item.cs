@@ -33,15 +33,7 @@ namespace UpgradeQuality.Items
 
         protected override IEnumerable<Toil> MakeNewToils()
         {
-            base.AddEndCondition(delegate
-            {
-                Thing thing = base.GetActor().jobs.curJob.GetTarget(TargetIndex.A).Thing;
-                if (thing is Verse.Building && !thing.Spawned)
-                {
-                    return JobCondition.Incompletable;
-                }
-                return JobCondition.Ongoing;
-            });
+            this.FailOnDestroyedNullOrForbidden(TargetIndex.A);
             this.FailOnBurningImmobile(TargetIndex.A);
             this.FailOn(delegate ()
             {
