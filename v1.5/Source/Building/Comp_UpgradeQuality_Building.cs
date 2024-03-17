@@ -25,7 +25,10 @@ namespace UpgradeQuality.Building
         {
             if (!HasUpgradeDesignation)
             {
-                if (parent.Faction == Faction.OfPlayer && (parent.GetInnerIfMinified() is Verse.Building))
+                if (parent.Faction == Faction.OfPlayer &&
+                    parent.GetInnerIfMinified() is Verse.Building building &&
+                    (UpgradeQuality.Settings.IsKeepOptionEnabled ||
+                        building.TryGetQuality(out var quality) && quality < QualityCategory.Legendary))
                 {
                     yield return CreateChangeBuildingGizmo();
                 }
@@ -169,7 +172,7 @@ namespace UpgradeQuality.Building
                 UpgradeQualityUtility.LogMessage(LogLevel.Debug, "Found Frame without designation.");
                 CancelUpgrade();
             }
-            if(keepQuality)
+            if (keepQuality)
             {
                 return true;
             }
