@@ -1,6 +1,7 @@
 ﻿using HarmonyLib;
 using RimWorld;
 using System.Collections.Generic;
+using System.Linq;
 using System.Reflection;
 using Verse;
 
@@ -45,12 +46,7 @@ namespace UpgradeQuality.Building
         {
             if (FrameUtility.IsUpgradeBuildingFrame(__instance, out var frame))
             {
-                __result = new List<ThingDefCountClass>();
-                var neededResouces = frame.NeededResources;
-                if (neededResouces != null)
-                {
-                    __result = neededResouces;
-                }
+                __result = frame.NeededResources.Select(c => new ThingDefCountClass(c.ThingDef, c.Count)).ToList();
                 return false;
             }
             return true;

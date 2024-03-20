@@ -1,5 +1,6 @@
 ﻿using RimWorld;
 using System.Collections.Generic;
+using UpgradeQuality.Items;
 using Verse;
 using Verse.AI.Group;
 
@@ -17,7 +18,7 @@ namespace UpgradeQuality.Building
                 return Comp?.desiredQuality;
             }
         }
-        public List<ThingDefCountClass> NeededResources;
+        public List<ThingDefCountQuality> NeededResources;
         public bool? KeepQuality
         {
             get

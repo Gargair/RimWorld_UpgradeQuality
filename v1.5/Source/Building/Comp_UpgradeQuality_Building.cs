@@ -1,5 +1,6 @@
 ﻿using RimWorld;
 using System.Collections.Generic;
+using UpgradeQuality.Items;
 using Verse;
 
 namespace UpgradeQuality.Building
@@ -148,7 +149,7 @@ namespace UpgradeQuality.Building
             return base.CompInspectStringExtra();
         }
 
-        private List<ThingDefCountClass> InitializeResources()
+        private List<ThingDefCountQuality> InitializeResources()
         {
             if (this.CompQuality != null && this.CompQuality.Quality < this.desiredQuality)
             {
