@@ -7,7 +7,6 @@ namespace UpgradeQuality.Building
     public class Comp_UpgradeQuality_Building : ThingComp
     {
         public QualityCategory desiredQuality;
-        public List<ThingDefCountClass> neededResources;
         public bool keepQuality;
 
         public CompProperties_UpgradeQuality_Building Props => (CompProperties_UpgradeQuality_Building)props;
@@ -79,7 +78,6 @@ namespace UpgradeQuality.Building
                 placedFrame.Destroy(DestroyMode.Cancel);
                 placedFrame = null;
             }
-            InitializeResources();
             UpgradeQualityUtility.LogMessage(LogLevel.Debug, "Creating Frame");
             Frame_UpgradeQuality_Building frame = new Frame_UpgradeQuality_Building();
             frame.def = FrameUtility.GetFrameDefForThingDef(parent.def);
@@ -89,15 +87,16 @@ namespace UpgradeQuality.Building
             frame.StyleSourcePrecept = parent.StyleSourcePrecept;
             frame.thingToChange = parent;
             frame.SetFactionDirect(parent.Faction);
+            frame.generatedForQuality = CompQuality.Quality;
+            frame.NeededResources = InitializeResources();
             UpgradeQualityUtility.LogMessage(LogLevel.Debug, "Placing Frame");
-            placedFrame = (Frame_UpgradeQuality_Building)GenSpawn.Spawn(frame, parent.Position, parent.Map, parent.Rotation, WipeMode.Vanish);
+            placedFrame = (Frame_UpgradeQuality_Building)GenSpawn.Spawn(frame, parent.Position, parent.Map, parent.Rotation);
         }
 
         public void CancelUpgrade()
         {
             UpgradeQualityUtility.LogMessage(LogLevel.Debug, "CancelUpgrade");
             desiredQuality = QualityCategory.Awful;
-            neededResources = null;
             keepQuality = false;
             if (DesignationManager != null)
             {
@@ -121,7 +120,7 @@ namespace UpgradeQuality.Building
         public override void PostSpawnSetup(bool respawningAfterLoad)
         {
             base.PostSpawnSetup(respawningAfterLoad);
-            InitializeResources();
+            this.placedFrame.NeededResources = InitializeResources();
             if (needDesignationAfterSpawn)
             {
                 if (DesignationManager != null)
@@ -149,22 +148,24 @@ namespace UpgradeQuality.Building
             return base.CompInspectStringExtra();
         }
 
-        private void InitializeResources()
+        private List<ThingDefCountClass> InitializeResources()
         {
             if (this.CompQuality != null && this.CompQuality.Quality < this.desiredQuality)
             {
-                neededResources = UpgradeQualityUtility.GetNeededResources(this.parent);
+                return UpgradeQualityUtility.GetNeededResources(this.parent);
             }
-            else
-            {
-                neededResources = null;
-            }
+            return null;
         }
 
         public bool IsStillActive()
         {
             if (HasUpgradeDesignation)
             {
+                if(CompQuality != null && placedFrame != null && CompQuality.Quality != placedFrame.generatedForQuality)
+                {
+                    UpgradeQualityUtility.LogMessage(LogLevel.Debug, "Frame generated for different quality!");
+                    PlaceFrame();
+                }
                 return true;
             }
             if (placedFrame != null)

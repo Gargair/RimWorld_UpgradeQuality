@@ -8,6 +8,8 @@ namespace UpgradeQuality.Building
     public class Frame_UpgradeQuality_Building : Frame
     {
         public ThingWithComps thingToChange;
+        public QualityCategory generatedForQuality;
+
         public QualityCategory? DesiredQuality
         {
             get
@@ -15,13 +17,7 @@ namespace UpgradeQuality.Building
                 return Comp?.desiredQuality;
             }
         }
-        public List<ThingDefCountClass> NeededResources
-        {
-            get
-            {
-                return Comp?.neededResources;
-            }
-        }
+        public List<ThingDefCountClass> NeededResources;
         public bool? KeepQuality
         {
             get
@@ -43,6 +39,7 @@ namespace UpgradeQuality.Building
         {
             base.ExposeData();
             Scribe_References.Look(ref thingToChange, "UpgQlty.thingToChange");
+            Scribe_Values.Look(ref generatedForQuality, "UpgQlty.generatedForQuality", QualityCategory.Awful, true);
         }
 
         public void CustomCompleteConstruction(Pawn worker)

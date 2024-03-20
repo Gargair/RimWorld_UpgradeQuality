@@ -12,6 +12,7 @@ namespace UpgradeQuality.Building
 
         public override void LoadedGame()
         {
+            activeQualityComps.Clear();
             foreach (Map map in activeGame.Maps)
             {
                 foreach (var thing in map.listerBuildings.allBuildingsColonist)
@@ -31,18 +32,12 @@ namespace UpgradeQuality.Building
 
         public override void GameComponentTick()
         {
-            for (int i = 0; i < activeQualityComps.Count; i++)
+            for (int i = activeQualityComps.Count - 1; i >= 0; i--)
             {
                 var comp = activeQualityComps[i];
-                if (comp == null)
+                if (comp == null || !comp.IsStillActive())
                 {
                     activeQualityComps.RemoveAt(i);
-                    i--;
-                }
-                if (!comp.IsStillActive())
-                {
-                    activeQualityComps.RemoveAt(i);
-                    i--;
                 }
                 if (comp.parent.IsHashIntervalTick(600))
                 {
