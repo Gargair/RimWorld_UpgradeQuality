@@ -158,10 +158,6 @@ namespace UpgradeQuality.Items
                 {
                     return false;
                 }
-                //if (item.CostListAdjusted().Count == 0)
-                //{
-                //    return false;
-                //}
                 var compQuality = item.TryGetComp<CompQuality>();
                 if (compQuality == null || compQuality.Quality >= QualityCategory.Legendary)
                 {
@@ -198,10 +194,10 @@ namespace UpgradeQuality.Items
             return (this.def.fixedBillGiverDefs != null && this.def.fixedBillGiverDefs.Contains(thing.def)) || (pawn != null && ((this.def.billGiversAllHumanlikes && pawn.RaceProps.Humanlike) || (this.def.billGiversAllMechanoids && pawn.RaceProps.IsMechanoid) || (this.def.billGiversAllAnimals && pawn.RaceProps.Animal))) || (corpse != null && pawn2 != null && ((this.def.billGiversAllHumanlikesCorpses && pawn2.RaceProps.Humanlike) || (this.def.billGiversAllMechanoidsCorpses && pawn2.RaceProps.IsMechanoid) || (this.def.billGiversAllAnimalsCorpses && pawn2.RaceProps.Animal)));
         }
 
-        private static bool TryFindBestBillIngredients(Bill bill, Pawn pawn, Thing billGiver, List<ThingCount> chosen, Thing itemDamaged)
+        private static bool TryFindBestBillIngredients(Bill bill, Pawn pawn, Thing billGiver, List<ThingCount> chosen, Thing itemToUpgrade)
         {
             chosen.Clear();
-            List<ThingDefCountQuality> neededIngreds = CalculateTotalIngredients(itemDamaged);
+            List<ThingDefCountQuality> neededIngreds = UpgradeQualityUtility.GetNeededResources(itemToUpgrade);
 
             if (neededIngreds.NullOrEmpty())
             {
@@ -230,7 +226,7 @@ namespace UpgradeQuality.Items
                 {
                     return false;
                 }
-                if(t == itemDamaged)
+                if(t == itemToUpgrade)
                 {
                     return false;
                 }
@@ -269,24 +265,6 @@ namespace UpgradeQuality.Items
             RegionEntryPredicate entryCondition = (Region from, Region to) => to.Allows(TraverseParms.For(pawn), false);
             RegionTraverser.BreadthFirstTraverse(validRegionAt, entryCondition, regionProcessor, 99999, RegionType.Set_Passable);
             return foundAll;
-        }
-
-        internal static List<ThingDefCountQuality> CalculateTotalIngredients(Thing itemDamaged)
-        {
-            var list = itemDamaged.CostListAdjusted();
-            var qComp = itemDamaged.TryGetComp<CompQuality>();
-            if (qComp == null)
-            {
-                return new List<ThingDefCountQuality>();
-            }
-            if (list.NullOrEmpty())
-            {
-                var ret = new List<ThingDefCountQuality>();
-                ret.Add(new ThingDefCountQuality(itemDamaged.def, 1, new QualityRange(qComp.Quality, qComp.Quality)));
-                return ret;
-            }
-            var mult = UpgradeQualityUtility.GetMultiplier(qComp.Quality);
-            return list.Select(t => new ThingDefCountQuality(t.thingDef, Mathf.CeilToInt(t.count * mult))).ToList();
         }
 
         private static bool TryFindBestBillIngredientsInSet_NoMix(List<Thing> availableThings, List<ThingDefCountQuality> neededIngreds, List<ThingCount> chosen)

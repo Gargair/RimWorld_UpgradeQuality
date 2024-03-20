@@ -92,11 +92,11 @@ namespace UpgradeQuality.Building
                 }
                 if (instruction.Calls(totalMaterialCostMethod))
                 {
-                    UpgradeQualityUtility.LogMessage(LogLevel.Debug, "Found replacing method");
+                    UpgradeQualityUtility.LogMessage(LogLevel.Warning, "Found replacing method. If you see this warning please inform mod author. It is likely this can be ignored otherwise.");
                     foundTotalMaterialCostMethod = true;
                 }
             }
-            if (!didReplace && !foundTotalMaterialCostMethod)
+            if (!inReplacing && !didReplace && !foundTotalMaterialCostMethod)
             {
                 UpgradeQualityUtility.LogMessage(LogLevel.Error, "Transpiler for Frame.GetInspectString did not find its anchor.");
             }

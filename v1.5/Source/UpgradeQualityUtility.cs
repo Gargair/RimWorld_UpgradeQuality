@@ -1,5 +1,6 @@
 ﻿using HarmonyLib;
 using RimWorld;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
@@ -70,15 +71,57 @@ namespace UpgradeQuality
             }
         }
 
-        public static List<ThingDefCountClass> GetNeededResources(Thing thing)
+        private static readonly Dictionary<ValueTuple<ThingDef, ThingDef>, List<ThingDefCountQuality>> CachedBaseCosts = new Dictionary<(ThingDef, ThingDef), List<ThingDefCountQuality>>();
+
+        public static List<ThingDefCountQuality> GetNeededResources(Thing thing)
         {
             var q = thing.TryGetComp<CompQuality>();
             if (q != null)
             {
-                var l = new List<ThingDefCountClass>();
-                var origCostList = thing.CostListAdjusted();
                 var mult = GetMultiplier(q.Quality);
-                return origCostList.Select(x => new ThingDefCountClass(x.thingDef, Mathf.CeilToInt(x.count * mult))).ToList();
+                List<ThingDefCountQuality> tmpCostList = null;
+                if(CachedBaseCosts.TryGetValue((thing.def, thing.Stuff), out tmpCostList))
+                {
+                }
+                else if (thing.def is BuildableDef building)
+                {
+                    tmpCostList = thing.def.CostListAdjusted(thing.Stuff).Select(c => new ThingDefCountQuality(c.thingDef, c.count)).ToList();
+                    CachedBaseCosts[(thing.def, thing.Stuff)] = tmpCostList;
+                }
+                else
+                {
+                    IEnumerable<RecipeDef> recipes = from r in DefDatabase<RecipeDef>.AllDefsListForReading
+                                                     where r.products.Count == 1 && r.products.Any((ThingDefCountClass p) => p.thingDef == thing.def) && !r.IsSurgery
+                                                     select r;
+                    tmpCostList = new List<ThingDefCountQuality>();
+                    if (recipes.Any<RecipeDef>())
+                    {
+                        RecipeDef recipeDef = recipes.FirstOrDefault<RecipeDef>();
+                        if (recipeDef != null && !recipeDef.ingredients.NullOrEmpty<IngredientCount>())
+                        {
+                            for (int i = 0; i < recipeDef.ingredients.Count; i++)
+                            {
+                                IngredientCount ingredientCount = recipeDef.ingredients[i];
+                                ThingDef ingDef = null;
+                                if (ingredientCount.IsFixedIngredient)
+                                {
+                                    ingDef = ingredientCount.FixedIngredient;
+                                }
+                                else
+                                {
+                                    ingDef = thing.Stuff;
+                                }
+                                tmpCostList.Add(new ThingDefCountQuality(ingDef, ingredientCount.CountRequiredOfFor(ingDef, recipeDef)));
+                            }
+                        }
+                    }
+                    else
+                    {
+                        tmpCostList.Add(new ThingDefCountQuality(thing.def, 1, new QualityRange(q.Quality, q.Quality)));
+                    }
+                    CachedBaseCosts[(thing.def, thing.Stuff)] = tmpCostList;
+                }
+                return tmpCostList.Select(x => new ThingDefCountQuality(x.ThingDef, Mathf.CeilToInt(x.Count * mult), x.Range)).ToList();
             }
             return null;
         }
@@ -100,8 +143,10 @@ namespace UpgradeQuality
                 case QualityCategory.Masterwork:
                     return UpgradeQuality.Settings.Factor_Masterwork_Legendary;
                 case QualityCategory.Legendary:
+                    LogMessage(LogLevel.Error, "Requested multiplier for legendary quality. What?");
                     return 0;
                 default:
+                    LogMessage(LogLevel.Error, $"What the hell is {fromQuality} quality?");
                     return 0;
             }
         }
