@@ -2,11 +2,12 @@
 <Configuration>
   <Excluded>
     <exclude>.git</exclude>
+    <exclude>About\Preview.xcf</exclude>
     <exclude>Shared\Textures\UI\DesQualityUp.dds</exclude>
     <exclude>Shared\Textures\UI\QualityUp.dds</exclude>
-    <exclude>v1.4\Source</exclude>
     <exclude>v1.4\Assemblies\UpgradeQuality.pdb</exclude>
-    <exclude>v1.5\Source</exclude>
+    <exclude>v1.4\Source</exclude>
     <exclude>v1.5\Assemblies\UpgradeQuality.pdb</exclude>
+    <exclude>v1.5\Source</exclude>
   </Excluded>
 </Configuration>
