@@ -121,7 +121,10 @@ namespace UpgradeQuality.Building
         public override void PostSpawnSetup(bool respawningAfterLoad)
         {
             base.PostSpawnSetup(respawningAfterLoad);
-            this.placedFrame.NeededResources = InitializeResources();
+            if (this.placedFrame != null)
+            {
+                this.placedFrame.NeededResources = InitializeResources();
+            }
             if (needDesignationAfterSpawn)
             {
                 if (DesignationManager != null)
