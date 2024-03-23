@@ -14,7 +14,13 @@ namespace UpgradeQuality.Building
         public static ThingDef GetFrameDefForThingDef(ThingDef def)
         {
             if (frameCache.ContainsKey(def)) return frameCache[def];
+            UpgradeQualityUtility.LogMessage(LogLevel.Error, $"Missing frame def for {def.defName} in framecache. Wrong load order?");
+            Type typeFromHandle = typeof(ThingDef);
+            HashSet<ushort> h = ((Dictionary<Type, HashSet<ushort>>)AccessTools.Field(typeof(ShortHashGiver), "takenHashesPerDeftype").GetValue(null))[typeFromHandle];
             var frameDef = NewReplaceFrameDef_Thing(def);
+            GiveShortHash(frameDef, typeFromHandle, h);
+            frameDef.PostLoad();
+            DefDatabase<ThingDef>.Add(frameDef);
             frameCache.Add(def, frameDef);
             return frameDef;
         }
@@ -44,13 +50,13 @@ namespace UpgradeQuality.Building
         {
             Type typeFromHandle = typeof(ThingDef);
             HashSet<ushort> h = ((Dictionary<Type, HashSet<ushort>>)AccessTools.Field(typeof(ShortHashGiver), "takenHashesPerDeftype").GetValue(null))[typeFromHandle];
-            foreach (ThingDef thingDef in DefDatabase<ThingDef>.AllDefs.ToList<ThingDef>().Where(td => td.HasComp(typeof(Comp_UpgradeQuality_Building))))
+            foreach (ThingDef upgradeBuildingThingDef in DefDatabase<ThingDef>.AllDefs.ToList<ThingDef>().Where(td => td.HasComp(typeof(Comp_UpgradeQuality_Building))))
             {
-                ThingDef thingDef2 = NewReplaceFrameDef_Thing(thingDef);
-                frameCache[thingDef] = thingDef2;
-                GiveShortHash(thingDef2, typeFromHandle, h);
-                thingDef2.PostLoad();
-                DefDatabase<ThingDef>.Add(thingDef2);
+                ThingDef upgradeFrameDef = NewReplaceFrameDef_Thing(upgradeBuildingThingDef);
+                frameCache[upgradeBuildingThingDef] = upgradeFrameDef;
+                GiveShortHash(upgradeFrameDef, typeFromHandle, h);
+                upgradeFrameDef.PostLoad();
+                DefDatabase<ThingDef>.Add(upgradeFrameDef);
             }
         }
 
@@ -62,14 +68,24 @@ namespace UpgradeQuality.Building
             thingDef.size = def.size;
             thingDef.SetStatBaseValue(StatDefOf.MaxHitPoints, (float)def.BaseMaxHitPoints * 0.25f);
             thingDef.SetStatBaseValue(StatDefOf.Beauty, -8f);
+            thingDef.SetStatBaseValue(StatDefOf.Flammability, def.BaseFlammability);
             thingDef.fillPercent = 0.2f;
-            thingDef.pathCost = 10;
+            thingDef.pathCost = DefGenerator.StandardItemPathCost;
             thingDef.description = def.description;
             thingDef.passability = def.passability;
+            if (thingDef.passability > Traversability.PassThroughOnly)
+            {
+                thingDef.passability = Traversability.PassThroughOnly;
+            }
             thingDef.selectable = def.selectable;
             thingDef.constructEffect = def.constructEffect;
             thingDef.building.isEdifice = false;
+            thingDef.building.watchBuildingInSameRoom = def.building.watchBuildingInSameRoom;
+            thingDef.building.watchBuildingStandDistanceRange = def.building.watchBuildingStandDistanceRange;
+            thingDef.building.watchBuildingStandRectWidth = def.building.watchBuildingStandRectWidth;
+            thingDef.building.artificialForMeditationPurposes = def.building.artificialForMeditationPurposes;
             thingDef.constructionSkillPrerequisite = def.constructionSkillPrerequisite;
+            thingDef.artisticSkillPrerequisite = def.artisticSkillPrerequisite;
             thingDef.clearBuildingArea = false;
             thingDef.drawPlaceWorkersWhileSelected = def.drawPlaceWorkersWhileSelected;
             thingDef.stuffCategories = def.stuffCategories;

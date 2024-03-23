@@ -2,11 +2,12 @@
 using RimWorld;
 using System.Collections.Generic;
 using System.Linq;
+using Verse.AI;
 
 namespace UpgradeQuality.Items
 {
-    //[HarmonyPatch(typeof("Verse.AI.Toils_Haul/'<>c__DisplayClass8_0'"), "'<PlaceHauledThingInCell>b__0'")]
-    // Registered in UpgradeQualityUtility
+    [HarmonyPatchCategory("UpgradeItems")]
+    [HarmonyPatch("Verse.AI.Toils_Haul+<>c__DisplayClass8_0", "<PlaceHauledThingInCell>b__0")]
     public class Toils_Haul_Patch_PlacedThings
     {
         public static IEnumerable<CodeInstruction> Transpiler(IEnumerable<CodeInstruction> instructions)

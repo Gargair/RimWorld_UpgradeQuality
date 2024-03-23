@@ -7,6 +7,7 @@ using Verse;
 
 namespace UpgradeQuality.Building
 {
+    [HarmonyPatchCategory("UpgradeBuildings")]
     [HarmonyPatch(typeof(Frame), nameof(Frame.CompleteConstruction))]
     public class Frame_Patch_CompleteConstruction
     {
@@ -23,6 +24,7 @@ namespace UpgradeQuality.Building
         }
     }
 
+    [HarmonyPatchCategory("UpgradeBuildings")]
     [HarmonyPatch(typeof(Frame), nameof(Frame.FailConstruction))]
     public class Frame_Patch_FailConstruction
     {
@@ -39,6 +41,7 @@ namespace UpgradeQuality.Building
         }
     }
 
+    [HarmonyPatchCategory("UpgradeBuildings")]
     [HarmonyPatch(typeof(Frame), nameof(Frame.TotalMaterialCost))]
     public class Frame_Patch_TotalMaterialCost
     {
@@ -53,6 +56,7 @@ namespace UpgradeQuality.Building
         }
     }
 
+    [HarmonyPatchCategory("UpgradeBuildings")]
     [HarmonyPatch(typeof(Frame), nameof(Frame.GetInspectString))]
     public class Frame_GetInspectString
     {
@@ -103,6 +107,7 @@ namespace UpgradeQuality.Building
         }
     }
 
+    [HarmonyPatchCategory("UpgradeBuildings")]
     [HarmonyPatch(typeof(GenConstruct), "BlocksConstruction")]
     internal class ReplaceFrameNoBlock
     {
@@ -117,6 +122,7 @@ namespace UpgradeQuality.Building
         }
     }
 
+    [HarmonyPatchCategory("UpgradeBuildings")]
     [HarmonyPatch(typeof(GenSpawn), "SpawningWipes")]
     internal static class ReplaceFrameNoWipe
     {

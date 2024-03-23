@@ -13,6 +13,12 @@ namespace UpgradeQuality
         public float Factor_Excellent_Masterwork = 5;
         public float Factor_Masterwork_Legendary = 6;
         public bool IsKeepOptionEnabled = false;
+        private string AwfulBuffer = null;
+        private string PoorBuffer = null;
+        private string NormalBuffer = null;
+        private string GoodBuffer = null;
+        private string ExcellentBuffer = null;
+        private string MasterworkBuffer = null;
 
         private Vector2 ScrollPosition = Vector2.zero;
 
@@ -49,19 +55,19 @@ namespace UpgradeQuality
             Widgets.Label(labelRect, "UpgQlty.Labels.Settings.MaterialMultiplier".Translate());
             list.Gap(6f);
 
-            BuildMaterialSlider(list, ref Factor_Awful_Poor, awfulString, poorString);
-            BuildMaterialSlider(list, ref Factor_Poor_Normal, poorString, normalString);
-            BuildMaterialSlider(list, ref Factor_Normal_Good, normalString, goodString);
-            BuildMaterialSlider(list, ref Factor_Good_Excellent, goodString, excellentString);
-            BuildMaterialSlider(list, ref Factor_Excellent_Masterwork, excellentString, masterworkString);
-            BuildMaterialSlider(list, ref Factor_Masterwork_Legendary, masterworkString, legendaryString);
+            BuildMaterialSlider(list, ref Factor_Awful_Poor, ref AwfulBuffer, awfulString, poorString);
+            BuildMaterialSlider(list, ref Factor_Poor_Normal, ref PoorBuffer, poorString, normalString);
+            BuildMaterialSlider(list, ref Factor_Normal_Good, ref NormalBuffer, normalString, goodString);
+            BuildMaterialSlider(list, ref Factor_Good_Excellent, ref GoodBuffer, goodString, excellentString);
+            BuildMaterialSlider(list, ref Factor_Excellent_Masterwork, ref ExcellentBuffer, excellentString, masterworkString);
+            BuildMaterialSlider(list, ref Factor_Masterwork_Legendary, ref MasterworkBuffer, masterworkString, legendaryString);
             BuildCheckBox(list);
 
             list.End();
             Widgets.EndScrollView();
         }
 
-        private void BuildSlider(Listing_Standard listing_Standard, ref float valueRef, float minValue, float maxValue, TaggedString labelText, TaggedString tooltipText, bool withGap)
+        private void BuildSlider(Listing_Standard listing_Standard, ref float valueRef, ref string inputBuffer, float minValue, float maxValue, TaggedString labelText, TaggedString tooltipText, bool withGap)
         {
             var contentRect = listing_Standard.GetRect(Text.LineHeight + 70f);
             var topRect = contentRect.TopPartPixels(Text.LineHeight);
@@ -69,7 +75,6 @@ namespace UpgradeQuality
             var textInput = topRect.RightHalf();
             var sliderRect = contentRect.BottomPartPixels(50f);
             Widgets.Label(labelRect, labelText);
-            string inputBuffer = valueRef.ToString();
             Widgets.TextFieldNumeric(textInput, ref valueRef, ref inputBuffer, minValue, maxValue);
             Widgets.HorizontalSlider(sliderRect, ref valueRef, new FloatRange(minValue, maxValue));
             TooltipHandler.TipRegion(labelRect, tooltipText);
@@ -79,11 +84,11 @@ namespace UpgradeQuality
             }
         }
 
-        private void BuildMaterialSlider(Listing_Standard listing_Standard, ref float matRef, string catFromText, string catToText, bool withGap = true)
+        private void BuildMaterialSlider(Listing_Standard listing_Standard, ref float matRef, ref string intBuf, string catFromText, string catToText, bool withGap = true)
         {
             var labelText = "UpgQlty.Labels.Settings.MaterialsNeededFor".Translate(catFromText, catToText, matRef.ToString());
             var tooltiptext = "UpgQlty.Tooltips.Settings.MaterialsNeededTooltip".Translate();
-            BuildSlider(listing_Standard, ref matRef, 0.01f, 100f, labelText, tooltiptext, withGap);
+            BuildSlider(listing_Standard, ref matRef, ref intBuf, 0.01f, 20f, labelText, tooltiptext, withGap);
         }
 
         private void BuildCheckBox(Listing_Standard listing_Standard)
