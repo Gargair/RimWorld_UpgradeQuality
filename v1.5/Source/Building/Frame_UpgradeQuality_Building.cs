@@ -58,6 +58,10 @@ namespace UpgradeQuality.Building
             {
                 qualityComp.SetQuality(qualityComp.Quality + 1, ArtGenerationContext.Colony);
             }
+            if(thingToChange.TryGetComp<CompArt>(out CompArt compArt))
+            {
+                compArt.JustCreatedBy(worker);
+            }
 
             if (!this.Destroyed)
             {
