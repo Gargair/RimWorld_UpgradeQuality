@@ -68,6 +68,7 @@ namespace UpgradeQuality.Items
             {
                 return job;
             }
+            UpgradeQualityUtility.LogMessage(LogLevel.Debug, pawn.Name.ToStringFull, "asking for job");
             foreach (Bill bill in billGiver.BillStack)
             {
                 bool shouldSkip = (bill.recipe.requiredGiverWorkType != null && bill.recipe.requiredGiverWorkType != this.def.workType) || (Find.TickManager.TicksGame < bill.nextTickToSearchForIngredients && FloatMenuMakerMap.makingFor != pawn) || !bill.ShouldDoNow() || !bill.PawnAllowedToStartAnew(pawn);
@@ -75,6 +76,7 @@ namespace UpgradeQuality.Items
                 {
                     if (!bill.recipe.PawnSatisfiesSkillRequirements(pawn))
                     {
+                        UpgradeQualityUtility.LogMessage(LogLevel.Debug, pawn.Name.ToStringFull, "does not have required skill");
                         JobFailReason.Is("MissingSkill".Translate(), null);
                         return null;
                     }
@@ -83,15 +85,18 @@ namespace UpgradeQuality.Items
                     {
                         return StartNewUpgradeJob(bill, billGiver, unfinishedThing, new List<ThingCount>());
                     }
+                    UpgradeQualityUtility.LogMessage(LogLevel.Debug, pawn.Name.ToStringFull, "no in progress upgrade thing");
                     List<Thing> list = FindItemsToUpgrade(pawn, bench, bill);
                     if (list.NullOrEmpty())
                     {
+                        UpgradeQualityUtility.LogMessage(LogLevel.Debug, pawn.Name.ToStringFull, "no items to upgrade");
                         JobFailReason.Is("UpgQlty.Messages.NoUpgradeItems".Translate(), null);
                         return null;
                     }
+                    var possibleIngredients = GetAllPossibleIngredients(bill, pawn, bench);
                     foreach (Thing itemToUpgrade in list)
                     {
-                        if (TryFindBestBillIngredients(bill, pawn, bench, this.chosenIngThings, itemToUpgrade))
+                        if (TryFindBestBillIngredients(possibleIngredients, this.chosenIngThings, itemToUpgrade))
                         {
                             return StartNewUpgradeJob(bill, billGiver, itemToUpgrade, this.chosenIngThings);
                         }
@@ -104,38 +109,15 @@ namespace UpgradeQuality.Items
 
         private static Thing FindUnfinishedUpgradeThing(Pawn pawn, Thing bench, Bill bill)
         {
-            Region validRegionAt = pawn.Map.regionGrid.GetValidRegionAt(GetBillGiverRootCell(bench, pawn));
-            if (validRegionAt == null)
+            bool validator(Thing t)
             {
-                return null;
-            }
-            RegionEntryPredicate entryCondition = (Region from, Region to) => to.Allows(TraverseParms.For(pawn), false);
-            Func<Thing, bool> itemValidator = delegate (Thing item)
-            {
-                if (!item.Spawned || item.IsForbidden(pawn) || item.IsBurning() || !pawn.CanReserve(item))
+                if (!t.IsForbidden(pawn) && t is UnfinishedUpgrade)
                 {
-                    return false;
-                }
-                if ((double)(item.Position - bench.Position).LengthHorizontalSquared >= (double)bill.ingredientSearchRadius * (double)bill.ingredientSearchRadius)
-                {
-                    return false;
-                }
-                return item is UnfinishedUpgrade;
-            };
-            Thing foundUnfinishedThing = null;
-            RegionProcessor regionProcessor = delegate (Region region)
-            {
-                List<Thing> list = region.ListerThings.ThingsInGroup(ThingRequestGroup.HaulableAlways);
-                var unfinishedThings = list.Where(itemValidator);
-                if (unfinishedThings.Count() > 0)
-                {
-                    foundUnfinishedThing = unfinishedThings.First();
-                    return true;
+                    return pawn.CanReserve(t, 1, -1, null, false);
                 }
                 return false;
-            };
-            RegionTraverser.BreadthFirstTraverse(validRegionAt, entryCondition, regionProcessor, 99999, RegionType.Set_Passable);
-            return foundUnfinishedThing;
+            }
+            return GenClosest.ClosestThingReachable(pawn.Position, pawn.Map, ThingRequest.ForGroup(ThingRequestGroup.HaulableEver), PathEndMode.InteractionCell, TraverseParms.For(pawn, pawn.NormalMaxDanger(), TraverseMode.ByPawn, false, false, false), bill.ingredientSearchRadius, validator);
         }
 
         private static List<Thing> FindItemsToUpgrade(Pawn pawn, Thing bench, Bill bill)
@@ -143,46 +125,14 @@ namespace UpgradeQuality.Items
             Region validRegionAt = pawn.Map.regionGrid.GetValidRegionAt(WorkGiver_UpgradeQuality_Item.GetBillGiverRootCell(bench, pawn));
             if (validRegionAt == null)
             {
+                UpgradeQualityUtility.LogMessage(LogLevel.Debug, pawn.Name.ToStringFull, "no valid region");
                 return new List<Thing>();
             }
-            List<Thing> validItems = new List<Thing>();
-            List<Thing> relevantItems = new List<Thing>();
-            RegionEntryPredicate entryCondition = (Region from, Region to) => to.Allows(TraverseParms.For(pawn, Danger.Deadly, TraverseMode.ByPawn, false, false, false), false);
-            Func<Thing, bool> itemValidator = delegate (Thing item)
-            {
-                if (!item.Spawned || !bill.ingredientFilter.Allows(item) || item.IsForbidden(pawn) || item.IsBurning() || !pawn.CanReserve(item))
-                {
-                    return false;
-                }
-                if ((double)(item.Position - bench.Position).LengthHorizontalSquared >= (double)bill.ingredientSearchRadius * (double)bill.ingredientSearchRadius)
-                {
-                    return false;
-                }
-                //if (item.CostListAdjusted().Count == 0)
-                //{
-                //    return false;
-                //}
-                var compQuality = item.TryGetComp<CompQuality>();
-                if (compQuality == null || compQuality.Quality >= QualityCategory.Legendary)
-                {
-                    return false;
-                }
-                return true;
-            };
-            RegionProcessor regionProcessor = delegate (Region region)
-            {
-                List<Thing> list = region.ListerThings.ThingsMatching(ThingRequest.ForGroup(ThingRequestGroup.HaulableAlways));
-                relevantItems.AddRange(list.Where(itemValidator));
-                if (relevantItems.Count > 0)
-                {
-                    relevantItems.Sort((Thing t1, Thing t2) => (t1.Position - pawn.Position).LengthHorizontalSquared.CompareTo((t2.Position - pawn.Position).LengthHorizontalSquared));
-                    validItems.AddRange(relevantItems);
-                    relevantItems.Clear();
-                }
-                return false;
-            };
-            RegionTraverser.BreadthFirstTraverse(validRegionAt, entryCondition, regionProcessor, 99999, RegionType.Set_Passable);
-            return validItems;
+            var proc = new RegionProcessor_ThingToUpgrade(pawn, bill.ingredientSearchRadius, bench.Position, bill.ingredientFilter, true);
+            RegionTraverser.BreadthFirstTraverse(validRegionAt, proc, 99999, RegionType.Set_Passable);
+            proc.Sort();
+            UpgradeQualityUtility.LogMessage(LogLevel.Debug, pawn.Name.ToStringFull, "got", proc.ValidItems.Count.ToString(), "items from processor");
+            return proc.ValidItems.Where(itemToUpgrade => !UpgradeQualityUtility.GetNeededResources(itemToUpgrade).NullOrEmpty()).ToList();
         }
 
         private bool ThingIsUsableBillGiver(Thing thing)
@@ -198,110 +148,45 @@ namespace UpgradeQuality.Items
             return (this.def.fixedBillGiverDefs != null && this.def.fixedBillGiverDefs.Contains(thing.def)) || (pawn != null && ((this.def.billGiversAllHumanlikes && pawn.RaceProps.Humanlike) || (this.def.billGiversAllMechanoids && pawn.RaceProps.IsMechanoid) || (this.def.billGiversAllAnimals && pawn.RaceProps.Animal))) || (corpse != null && pawn2 != null && ((this.def.billGiversAllHumanlikesCorpses && pawn2.RaceProps.Humanlike) || (this.def.billGiversAllMechanoidsCorpses && pawn2.RaceProps.IsMechanoid) || (this.def.billGiversAllAnimalsCorpses && pawn2.RaceProps.Animal)));
         }
 
-        private static bool TryFindBestBillIngredients(Bill bill, Pawn pawn, Thing billGiver, List<ThingCount> chosen, Thing itemDamaged)
+        private static List<Thing> GetAllPossibleIngredients(Bill bill, Pawn pawn, Thing billGiver)
+        {
+            var foundThings = new List<Thing>();
+            Region validRegionAt = pawn.Map.regionGrid.GetValidRegionAt(GetBillGiverRootCell(billGiver, pawn));
+            if (validRegionAt == null)
+            {
+                return foundThings;
+            }
+            var proc = new RegionProcessor_ThingToUpgrade(pawn, bill.ingredientSearchRadius, billGiver.Position, null, false);
+            RegionTraverser.BreadthFirstTraverse(validRegionAt, proc, 99999, RegionType.Set_Passable);
+            proc.Sort();
+            return proc.ValidItems;
+        }
+
+        private static bool TryFindBestBillIngredients(List<Thing> possibleItems, List<ThingCount> chosen, Thing itemToUpgrade)
         {
             chosen.Clear();
-            List<ThingDefCountQuality> neededIngreds = CalculateTotalIngredients(itemDamaged);
+            List<ThingDefCountClass> neededIngreds = UpgradeQualityUtility.GetNeededResources(itemToUpgrade);
 
             if (neededIngreds.NullOrEmpty())
             {
                 return true;
             }
-            Region validRegionAt = pawn.Map.regionGrid.GetValidRegionAt(GetBillGiverRootCell(billGiver, pawn));
-            if (validRegionAt == null)
-            {
-                return false;
-            }
-
-            List<Thing> relevantThings = new List<Thing>();
-            bool foundAll = false;
-
-            Func<Thing, bool> baseValidator = delegate (Thing t)
-            {
-                if (!t.Spawned || t.IsForbidden(pawn) || !pawn.CanReserve(t, 1, -1, null, false))
-                {
-                    return false;
-                }
-                if ((double)(t.Position - billGiver.Position).LengthHorizontalSquared >= (double)bill.ingredientSearchRadius * (double)bill.ingredientSearchRadius)
-                {
-                    return false;
-                }
-                if (!neededIngreds.Any((ThingDefCountQuality ingred) => ingred.ThingDef == t.def))
-                {
-                    return false;
-                }
-                if(t == itemDamaged)
-                {
-                    return false;
-                }
-                return (!bill.CheckIngredientsIfSociallyProper || t.IsSociallyProper(pawn));
-            };
-
-            bool billGiverIsPawn = billGiver is Pawn;
-            List<Thing> newRelevantThings = new List<Thing>();
-
-            RegionProcessor regionProcessor = delegate (Region r)
-            {
-                newRelevantThings.Clear();
-                List<Thing> list = r.ListerThings.ThingsInGroup(ThingRequestGroup.HaulableEver);
-                foreach (Thing thing in list)
-                {
-                    if (baseValidator(thing) && (!thing.def.IsMedicine || !billGiverIsPawn))
-                    {
-                        newRelevantThings.Add(thing);
-                    }
-                }
-
-                if (newRelevantThings.Count <= 0)
-                {
-                    return false;
-                }
-                newRelevantThings.Sort((Thing t1, Thing t2) => (t1.Position - pawn.Position).LengthHorizontalSquared.CompareTo((t2.Position - pawn.Position).LengthHorizontalSquared));
-                relevantThings.AddRange(newRelevantThings);
-                newRelevantThings.Clear();
-                if (TryFindBestBillIngredientsInSet_NoMix(relevantThings, neededIngreds, chosen))
-                {
-                    foundAll = true;
-                    return true;
-                }
-                return false;
-            };
-            RegionEntryPredicate entryCondition = (Region from, Region to) => to.Allows(TraverseParms.For(pawn), false);
-            RegionTraverser.BreadthFirstTraverse(validRegionAt, entryCondition, regionProcessor, 99999, RegionType.Set_Passable);
-            return foundAll;
+            return TryFindBestBillIngredientsInSet_NoMix(possibleItems.Where(t => t != itemToUpgrade).ToList(), neededIngreds, chosen);
         }
 
-        internal static List<ThingDefCountQuality> CalculateTotalIngredients(Thing itemDamaged)
-        {
-            var list = itemDamaged.CostListAdjusted();
-            var qComp = itemDamaged.TryGetComp<CompQuality>();
-            if (qComp == null)
-            {
-                return new List<ThingDefCountQuality>();
-            }
-            if (list.NullOrEmpty())
-            {
-                var ret = new List<ThingDefCountQuality>();
-                ret.Add(new ThingDefCountQuality(itemDamaged.def, 1, new QualityRange(qComp.Quality, qComp.Quality)));
-                return ret;
-            }
-            var mult = UpgradeQualityUtility.GetMultiplier(qComp.Quality);
-            return list.Select(t => new ThingDefCountQuality(t.thingDef, Mathf.CeilToInt(t.count * mult))).ToList();
-        }
-
-        private static bool TryFindBestBillIngredientsInSet_NoMix(List<Thing> availableThings, List<ThingDefCountQuality> neededIngreds, List<ThingCount> chosen)
+        private static bool TryFindBestBillIngredientsInSet_NoMix(List<Thing> availableThings, List<ThingDefCountClass> neededIngreds, List<ThingCount> chosen)
         {
             chosen.Clear();
             var AvailableCounts = new DefCountList();
             var AssignedThings = new HashSet<Thing>();
             AvailableCounts.GenerateFrom(availableThings);
-            foreach (ThingDefCountQuality thingDefCount in neededIngreds)
+            foreach (ThingDefCountClass thingDefCount in neededIngreds)
             {
                 bool flag = false;
                 for (int i = 0; i < AvailableCounts.Count; i++)
                 {
-                    float num = (float)thingDefCount.Count;
-                    bool flag2 = (double)num > (double)AvailableCounts.GetCount(i) || thingDefCount.ThingDef != AvailableCounts.GetDef(i);
+                    float num = (float)thingDefCount.count;
+                    bool flag2 = (double)num > (double)AvailableCounts.GetCount(i) || thingDefCount.thingDef != AvailableCounts.GetDef(i);
                     if (!flag2)
                     {
                         foreach (Thing thing in availableThings)
@@ -309,32 +194,17 @@ namespace UpgradeQuality.Items
                             bool flag3 = thing.def != AvailableCounts.GetDef(i) || AssignedThings.Contains(thing);
                             if (!flag3)
                             {
-                                var shouldAdd = false;
-                                if (thing.TryGetQuality(out QualityCategory qCat))
+                                int num2 = Mathf.Min(Mathf.FloorToInt(num), thing.stackCount);
+                                ThingCountUtility.AddToList(chosen, thing, num2);
+                                num -= (float)num2;
+                                AssignedThings.Add(thing);
+                                bool flag4 = (double)num < 0.001;
+                                if (flag4)
                                 {
-                                    if (thingDefCount.Range.Includes(qCat))
-                                    {
-                                        shouldAdd = true;
-                                    }
-                                }
-                                else if (thingDefCount.Range == QualityRange.All)
-                                {
-                                    shouldAdd = true;
-                                }
-                                if (shouldAdd)
-                                {
-                                    int num2 = Mathf.Min(Mathf.FloorToInt(num), thing.stackCount);
-                                    ThingCountUtility.AddToList(chosen, thing, num2);
-                                    num -= (float)num2;
-                                    AssignedThings.Add(thing);
-                                    bool flag4 = (double)num < 0.001;
-                                    if (flag4)
-                                    {
-                                        flag = true;
-                                        float val = AvailableCounts.GetCount(i) - (float)thingDefCount.Count;
-                                        AvailableCounts.SetCount(i, val);
-                                        break;
-                                    }
+                                    flag = true;
+                                    float val = AvailableCounts.GetCount(i) - (float)thingDefCount.count;
+                                    AvailableCounts.SetCount(i, val);
+                                    break;
                                 }
                             }
                         }

@@ -15,7 +15,6 @@ namespace UpgradeQuality
     {
         static UpgradeQualityUtility()
         {
-            LogMessage(LogLevel.Information, "Welcome to pointless log spam");
             var upgradeBuildingCompNever = new CompProperties_UpgradeQuality_Building(TickerType.Never);
             var upgradeBuildingCompNormal = new CompProperties_UpgradeQuality_Building(TickerType.Normal);
             var upgradeBuildingCompRare = new CompProperties_UpgradeQuality_Building(TickerType.Rare);

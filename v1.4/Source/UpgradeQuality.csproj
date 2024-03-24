@@ -49,6 +49,7 @@
     <Compile Include="Building\Frame_UpgradeQuality_Building.cs" />
     <Compile Include="Items\HaulingPatches.cs" />
     <Compile Include="Items\JobDriver_UpgradeQuality_Item.cs" />
+    <Compile Include="Items\RegionProcessor_ThingToUpgrade.cs" />
     <Compile Include="Items\ThigDefCountQuality.cs" />
     <Compile Include="Items\WorkGiver_UpgradeQuality_Item.cs" />
     <Compile Include="Items\UnfinishedUpgrade.cs" />
