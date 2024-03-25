@@ -1,4 +1,5 @@
 ﻿using RimWorld;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using Verse;
@@ -9,6 +10,7 @@ namespace UpgradeQuality.Items
     public class RegionProcessor_ThingToUpgrade : RegionProcessorDelegateCache
     {
         private Pawn worker;
+        private double searchRadius;
         private double searchRadiusSquared;
         private IntVec3 anchorCell;
         private ThingFilter itemFilter;
@@ -19,6 +21,7 @@ namespace UpgradeQuality.Items
         public RegionProcessor_ThingToUpgrade(Pawn worker, double searchRadius, IntVec3 anchorCell, ThingFilter itemFilter, bool noLegendary)
         {
             this.worker = worker;
+            this.searchRadius = searchRadius;
             this.searchRadiusSquared = searchRadius * searchRadius;
             this.anchorCell = anchorCell;
             this.itemFilter = itemFilter;
@@ -32,7 +35,26 @@ namespace UpgradeQuality.Items
 
         protected override bool RegionEntryPredicate(Region from, Region to)
         {
-            return to.Allows(TraverseParms.For(worker), false);
+            var traverseParams = TraverseParms.For(worker);
+            if (Math.Abs(999f - searchRadius) >= 1f)
+            {
+                if (!to.Allows(traverseParams, false))
+                {
+                    return false;
+                }
+                CellRect extentsClose = to.extentsClose;
+                int num = Math.Abs(anchorCell.x - Math.Max(extentsClose.minX, Math.Min(anchorCell.x, extentsClose.maxX)));
+                if ((float)num > searchRadius)
+                {
+                    return false;
+                }
+                int num2 = Math.Abs(anchorCell.z - Math.Max(extentsClose.minZ, Math.Min(anchorCell.z, extentsClose.maxZ)));
+                return (float)num2 <= searchRadius && (float)(num * num + num2 * num2) <= searchRadiusSquared;
+            }
+            else
+            {
+                return to.Allows(traverseParams, false);
+            }
         }
 
         public void Sort()
@@ -44,10 +66,6 @@ namespace UpgradeQuality.Items
         {
             List<Thing> list = region.ListerThings.ThingsMatching(ThingRequest.ForGroup(ThingRequestGroup.HaulableAlways));
             ValidItems.AddRange(list.Where(ItemValidator));
-            if (region.IsDoorway && (region.AnyCell - anchorCell).LengthHorizontalSquared >= (searchRadiusSquared))
-            {
-                return true;
-            }
             return false;
         }
 

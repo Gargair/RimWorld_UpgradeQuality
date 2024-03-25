@@ -1,13 +1,13 @@
 ﻿using RimWorld;
 using System.Collections.Generic;
+using UpgradeQuality.Items;
 using Verse;
 
 namespace UpgradeQuality.Building
 {
-    internal class Comp_UpgradeQuality_Building : ThingComp
+    public class Comp_UpgradeQuality_Building : ThingComp
     {
         public QualityCategory desiredQuality;
-        public List<ThingDefCountClass> neededResources;
         public bool keepQuality;
 
         public CompProperties_UpgradeQuality_Building Props => (CompProperties_UpgradeQuality_Building)props;
@@ -17,17 +17,18 @@ namespace UpgradeQuality.Building
         private bool HasUpgradeDesignation => DesignationManager?.DesignationOn(parent, UpgradeQualityDefOf.Designations.IncreaseQuality_Building) != null;
         private bool needDesignationAfterSpawn = false;
         private CompQuality CompQuality => parent?.GetComp<CompQuality>();
+        private GameComponent_ActiveQualityCompTracker tracker = Current.Game.GetComponent<GameComponent_ActiveQualityCompTracker>();
 
-        public Comp_UpgradeQuality_Building()
-        {
-
-        }
+        public Comp_UpgradeQuality_Building() { }
 
         public override IEnumerable<Gizmo> CompGetGizmosExtra()
         {
             if (!HasUpgradeDesignation)
             {
-                if (parent.Faction == Faction.OfPlayer && (parent.GetInnerIfMinified() is Verse.Building))
+                if (parent.Faction == Faction.OfPlayer &&
+                    parent.GetInnerIfMinified() is Verse.Building building &&
+                    (UpgradeQuality.Settings.IsKeepOptionEnabled ||
+                        building.TryGetQuality(out var quality) && quality < QualityCategory.Legendary))
                 {
                     yield return CreateChangeBuildingGizmo();
                 }
@@ -57,11 +58,13 @@ namespace UpgradeQuality.Building
                 {
                     DesignationManager.AddDesignation(new Designation(parent, UpgradeQualityDefOf.Designations.IncreaseQuality_Building));
                 }
+                tracker?.AddComponent(this);
             }
             else if (keepQuality)
             {
                 this.desiredQuality = desiredQuality;
                 this.keepQuality = keepQuality;
+                tracker?.AddComponent(this);
             }
             else
             {
@@ -76,7 +79,6 @@ namespace UpgradeQuality.Building
                 placedFrame.Destroy(DestroyMode.Cancel);
                 placedFrame = null;
             }
-            InitializeResources();
             UpgradeQualityUtility.LogMessage(LogLevel.Debug, "Creating Frame");
             Frame_UpgradeQuality_Building frame = new Frame_UpgradeQuality_Building();
             frame.def = FrameUtility.GetFrameDefForThingDef(parent.def);
@@ -86,15 +88,16 @@ namespace UpgradeQuality.Building
             frame.StyleSourcePrecept = parent.StyleSourcePrecept;
             frame.thingToChange = parent;
             frame.SetFactionDirect(parent.Faction);
+            frame.generatedForQuality = CompQuality.Quality;
+            frame.NeededResources = InitializeResources();
             UpgradeQualityUtility.LogMessage(LogLevel.Debug, "Placing Frame");
-            placedFrame = (Frame_UpgradeQuality_Building)GenSpawn.Spawn(frame, parent.Position, parent.Map, parent.Rotation, WipeMode.Vanish);
+            placedFrame = (Frame_UpgradeQuality_Building)GenSpawn.Spawn(frame, parent.Position, parent.Map, parent.Rotation);
         }
 
         public void CancelUpgrade()
         {
             UpgradeQualityUtility.LogMessage(LogLevel.Debug, "CancelUpgrade");
             desiredQuality = QualityCategory.Awful;
-            neededResources = null;
             keepQuality = false;
             if (DesignationManager != null)
             {
@@ -118,7 +121,10 @@ namespace UpgradeQuality.Building
         public override void PostSpawnSetup(bool respawningAfterLoad)
         {
             base.PostSpawnSetup(respawningAfterLoad);
-            InitializeResources();
+            if (this.placedFrame != null)
+            {
+                this.placedFrame.NeededResources = InitializeResources();
+            }
             if (needDesignationAfterSpawn)
             {
                 if (DesignationManager != null)
@@ -146,44 +152,52 @@ namespace UpgradeQuality.Building
             return base.CompInspectStringExtra();
         }
 
-        private void InitializeResources()
+        private List<ThingDefCountQuality> InitializeResources()
         {
             if (this.CompQuality != null && this.CompQuality.Quality < this.desiredQuality)
             {
-                neededResources = UpgradeQualityUtility.GetNeededResources(this.parent);
+                return UpgradeQualityUtility.GetNeededResources(this.parent);
             }
-            else
+            return null;
+        }
+
+        public bool IsStillActive()
+        {
+            if (HasUpgradeDesignation)
             {
-                neededResources = null;
+                if (CompQuality != null && placedFrame != null && CompQuality.Quality != placedFrame.generatedForQuality)
+                {
+                    UpgradeQualityUtility.LogMessage(LogLevel.Debug, "Frame generated for different quality!");
+                    PlaceFrame();
+                }
+                return true;
+            }
+            if (placedFrame != null)
+            {
+                UpgradeQualityUtility.LogMessage(LogLevel.Debug, "Found Frame without designation.");
+                CancelUpgrade();
+            }
+            if (keepQuality)
+            {
+                return true;
+            }
+            if (CompQuality != null && CompQuality.Quality < desiredQuality)
+            {
+                return true;
+            }
+            return false;
+        }
+
+        public void CheckAndDoUpgrade()
+        {
+            if (!HasUpgradeDesignation && this.parent.HitPoints >= this.parent.MaxHitPoints)
+            {
+                if (keepQuality && CompQuality != null && CompQuality.Quality < desiredQuality)
+                {
+                    SetDesiredQualityTo(desiredQuality, keepQuality);
+                }
             }
         }
 
-        public override void CompTick()
-        {
-            base.CompTick();
-            if (DesignationManager != null && !HasUpgradeDesignation)
-            {
-                if (placedFrame != null)
-                {
-                    UpgradeQualityUtility.LogMessage(LogLevel.Debug, "Found Frame without designation.");
-                    CancelUpgrade();
-                }
-                if (this.parent.HitPoints >= this.parent.MaxHitPoints && Find.TickManager.TicksGame % 600 == 0)
-                {
-                    if (keepQuality && CompQuality != null && CompQuality.Quality < desiredQuality)
-                    {
-                        SetDesiredQualityTo(desiredQuality, keepQuality);
-                    }
-                }
-            }
-            if (Props.originalTickerType == TickerType.Rare && Find.TickManager.TicksGame % 250 == 0)
-            {
-                parent.TickRare();
-            }
-            else if (Props.originalTickerType == TickerType.Long && Find.TickManager.TicksGame % 2000 == 0)
-            {
-                parent.TickLong();
-            }
-        }
     }
 }

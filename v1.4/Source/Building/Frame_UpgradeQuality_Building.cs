@@ -2,14 +2,17 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using UpgradeQuality.Items;
 using Verse;
 using Verse.AI.Group;
 
 namespace UpgradeQuality.Building
 {
-    internal class Frame_UpgradeQuality_Building : Frame
+    public class Frame_UpgradeQuality_Building : Frame
     {
         public ThingWithComps thingToChange;
+        public QualityCategory generatedForQuality;
+
         public QualityCategory? DesiredQuality
         {
             get
@@ -17,13 +20,7 @@ namespace UpgradeQuality.Building
                 return Comp?.desiredQuality;
             }
         }
-        public List<ThingDefCountClass> NeededResources
-        {
-            get
-            {
-                return Comp?.neededResources;
-            }
-        }
+        public List<ThingDefCountQuality> NeededResources;
         public bool? KeepQuality
         {
             get
@@ -45,22 +42,22 @@ namespace UpgradeQuality.Building
         {
             stringBuilder.AppendLineIfNotEmpty();
             stringBuilder.AppendLine("ContainedResources".Translate() + ":");
-            List<ThingDefCountClass> list = this.CustomCostListAdjusted();
+            List<ThingDefCountQuality> list = NeededResources;
             for (int i = 0; i < list.Count; i++)
             {
-                ThingDefCountClass need = list[i];
-                int num = need.count;
+                ThingDefCountQuality need = list[i];
+                int num = need.Count;
                 IEnumerable<ThingDefCountClass> source = this.MaterialsNeeded();
-                foreach (ThingDefCountClass thingDefCountClass in source.Where(needed => needed.thingDef == need.thingDef))
+                foreach (ThingDefCountClass thingDefCountClass in source.Where(needed => needed.thingDef == need.ThingDef))
                 {
                     num -= thingDefCountClass.count;
                 }
                 stringBuilder.AppendLine(string.Concat(new object[]
                 {
-                    need.thingDef.LabelCap + ": ",
+                    need.ThingDef.LabelCap + ": ",
                     num,
                     " / ",
-                    need.count
+                    need.Count
                 }));
             }
             stringBuilder.Append("WorkLeft".Translate() + ": " + this.WorkLeft.ToStringWorkAmount());
@@ -71,6 +68,7 @@ namespace UpgradeQuality.Building
         {
             base.ExposeData();
             Scribe_References.Look(ref thingToChange, "UpgQlty.thingToChange");
+            Scribe_Values.Look(ref generatedForQuality, "UpgQlty.generatedForQuality", QualityCategory.Awful, true);
         }
 
         public void CustomCompleteConstruction(Pawn worker)
@@ -88,25 +86,18 @@ namespace UpgradeQuality.Building
             {
                 qualityComp.SetQuality(qualityComp.Quality + 1, ArtGenerationContext.Colony);
             }
+            var compArt = thingToChange.TryGetComp<CompArt>();
+            if (compArt != null)
+            {
+                compArt.JustCreatedBy(worker);
+            }
 
             if (!this.Destroyed)
             {
                 this.Destroy(DestroyMode.Vanish);
             }
             // The destroy implicitly cancels the upgrade.
-
-            if (qualityComp.Quality >= desiredQuality)
-            {
-                // TODO: Send Notification
-                if (keepQuality)
-                {
-                    comp.SetDesiredQualityTo(desiredQuality, keepQuality);
-                }
-            }
-            else
-            {
-                comp.SetDesiredQualityTo(desiredQuality, keepQuality);
-            }
+            comp.SetDesiredQualityTo(desiredQuality, keepQuality);
 
             worker.records.Increment(RecordDefOf.ThingsConstructed);
             if (thingToChange != null && thingToChange.GetStatValue(StatDefOf.WorkToBuild, true, -1) >= 9500f)
@@ -119,31 +110,15 @@ namespace UpgradeQuality.Building
             }
         }
 
-        public List<ThingDefCountClass> CustomCostListAdjusted()
-        {
-            return NeededResources;
-        }
-
         public void CustomFailConstruction(Pawn worker)
         {
             Map map = base.Map;
-            var qualityComp = thingToChange.GetComp<CompQuality>();
             var desiredQuality = DesiredQuality ?? QualityCategory.Awful;
             var keepQuality = KeepQuality.HasValue ? KeepQuality.Value : false;
             var comp = Comp;
             this.Destroy(DestroyMode.FailConstruction);
             // The destroy implicitly cancels the upgrade.
-            if (qualityComp.Quality >= desiredQuality)
-            {
-                if (keepQuality)
-                {
-                    comp.SetDesiredQualityTo(desiredQuality, keepQuality);
-                }
-            }
-            else
-            {
-                comp.SetDesiredQualityTo(desiredQuality, keepQuality);
-            }
+            comp.SetDesiredQualityTo(desiredQuality, keepQuality);
             Lord lord = worker.GetLord();
             if (lord != null)
             {

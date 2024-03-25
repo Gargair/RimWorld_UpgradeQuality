@@ -43,11 +43,21 @@ namespace UpgradeQuality.Building
 
         private static IEnumerable<FloatMenuOption> GetFloatingOptions()
         {
-            var allSelectedThings = Find.Selector.SelectedObjects.FindAll((object o) => typeof(ThingWithComps).IsAssignableFrom(o.GetType())).Cast<ThingWithComps>();
-
+            List<object> list = Find.Selector.SelectedObjects.FindAll((object o) => typeof(ThingWithComps).IsAssignableFrom(o.GetType()));
+            QualityCategory lowestQcFound = QualityCategory.Legendary;
+            foreach (object item in list)
+            {
+                if (item is ThingWithComps thing && thing.TryGetQuality(out QualityCategory itemQc) && itemQc < lowestQcFound)
+                {
+                    lowestQcFound = itemQc;
+                }
+            }
             foreach (var cat in RenderQualityCategories)
             {
-                yield return new FloatMenuOption("UpgQlty.Labels.UpgradeTo".Translate(cat.GetLabel()), () => ChangeTo(cat, false));
+                if (cat > lowestQcFound)
+                {
+                    yield return new FloatMenuOption("UpgQlty.Labels.UpgradeTo".Translate(cat.GetLabel()), () => ChangeTo(cat, false));
+                }
                 if (UpgradeQuality.Settings.IsKeepOptionEnabled)
                 {
                     yield return new FloatMenuOption("UpgQlty.Labels.UpgradeToKeep".Translate(cat.GetLabel()), () => ChangeTo(cat, true));

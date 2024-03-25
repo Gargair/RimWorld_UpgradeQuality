@@ -68,7 +68,6 @@ namespace UpgradeQuality.Items
             {
                 return job;
             }
-            UpgradeQualityUtility.LogMessage(LogLevel.Debug, pawn.Name.ToStringFull, "asking for job");
             foreach (Bill bill in billGiver.BillStack)
             {
                 bool shouldSkip = (bill.recipe.requiredGiverWorkType != null && bill.recipe.requiredGiverWorkType != this.def.workType) || (Find.TickManager.TicksGame < bill.nextTickToSearchForIngredients && FloatMenuMakerMap.makingFor != pawn) || !bill.ShouldDoNow() || !bill.PawnAllowedToStartAnew(pawn);
@@ -76,7 +75,6 @@ namespace UpgradeQuality.Items
                 {
                     if (!bill.recipe.PawnSatisfiesSkillRequirements(pawn))
                     {
-                        UpgradeQualityUtility.LogMessage(LogLevel.Debug, pawn.Name.ToStringFull, "does not have required skill");
                         JobFailReason.Is("MissingSkill".Translate(), null);
                         return null;
                     }
@@ -85,11 +83,9 @@ namespace UpgradeQuality.Items
                     {
                         return StartNewUpgradeJob(bill, billGiver, unfinishedThing, new List<ThingCount>());
                     }
-                    UpgradeQualityUtility.LogMessage(LogLevel.Debug, pawn.Name.ToStringFull, "no in progress upgrade thing");
                     List<Thing> list = FindItemsToUpgrade(pawn, bench, bill);
                     if (list.NullOrEmpty())
                     {
-                        UpgradeQualityUtility.LogMessage(LogLevel.Debug, pawn.Name.ToStringFull, "no items to upgrade");
                         JobFailReason.Is("UpgQlty.Messages.NoUpgradeItems".Translate(), null);
                         return null;
                     }
@@ -113,39 +109,29 @@ namespace UpgradeQuality.Items
             {
                 if (!t.IsForbidden(pawn) && t is UnfinishedUpgrade)
                 {
-                    return pawn.CanReserve(t, 1, -1, null, false);
+                    return pawn.CanReserve(t, 1, 1);
                 }
                 return false;
             }
-            return GenClosest.ClosestThingReachable(pawn.Position, pawn.Map, ThingRequest.ForGroup(ThingRequestGroup.HaulableEver), PathEndMode.InteractionCell, TraverseParms.For(pawn, pawn.NormalMaxDanger(), TraverseMode.ByPawn, false, false, false), bill.ingredientSearchRadius, validator);
+            return GenClosest.ClosestThingReachable(bench.Position, bench.Map, ThingRequest.ForGroup(ThingRequestGroup.HaulableEver), PathEndMode.InteractionCell, TraverseParms.For(pawn, pawn.NormalMaxDanger()), bill.ingredientSearchRadius, validator);
         }
 
         private static List<Thing> FindItemsToUpgrade(Pawn pawn, Thing bench, Bill bill)
         {
-            Region validRegionAt = pawn.Map.regionGrid.GetValidRegionAt(WorkGiver_UpgradeQuality_Item.GetBillGiverRootCell(bench, pawn));
+            Region validRegionAt = pawn.Map.regionGrid.GetValidRegionAt(GetBillGiverRootCell(bench, pawn));
             if (validRegionAt == null)
             {
-                UpgradeQualityUtility.LogMessage(LogLevel.Debug, pawn.Name.ToStringFull, "no valid region");
                 return new List<Thing>();
             }
-            var proc = new RegionProcessor_ThingToUpgrade(pawn, bill.ingredientSearchRadius, bench.Position, bill.ingredientFilter, true);
+            var proc = new RegionProcessor_ThingToUpgrade(pawn, bill.ingredientSearchRadius, GetBillGiverRootCell(bench, pawn), bill.ingredientFilter, true);
             RegionTraverser.BreadthFirstTraverse(validRegionAt, proc, 99999, RegionType.Set_Passable);
             proc.Sort();
-            UpgradeQualityUtility.LogMessage(LogLevel.Debug, pawn.Name.ToStringFull, "got", proc.ValidItems.Count.ToString(), "items from processor");
-            return proc.ValidItems.Where(itemToUpgrade => !UpgradeQualityUtility.GetNeededResources(itemToUpgrade).NullOrEmpty()).ToList();
+            return proc.ValidItems;
         }
 
         private bool ThingIsUsableBillGiver(Thing thing)
         {
-            Pawn pawn = thing as Pawn;
-            Corpse corpse = thing as Corpse;
-            Pawn pawn2 = null;
-            bool flag = corpse != null;
-            if (flag)
-            {
-                pawn2 = corpse.InnerPawn;
-            }
-            return (this.def.fixedBillGiverDefs != null && this.def.fixedBillGiverDefs.Contains(thing.def)) || (pawn != null && ((this.def.billGiversAllHumanlikes && pawn.RaceProps.Humanlike) || (this.def.billGiversAllMechanoids && pawn.RaceProps.IsMechanoid) || (this.def.billGiversAllAnimals && pawn.RaceProps.Animal))) || (corpse != null && pawn2 != null && ((this.def.billGiversAllHumanlikesCorpses && pawn2.RaceProps.Humanlike) || (this.def.billGiversAllMechanoidsCorpses && pawn2.RaceProps.IsMechanoid) || (this.def.billGiversAllAnimalsCorpses && pawn2.RaceProps.Animal)));
+            return (this.def.fixedBillGiverDefs != null && this.def.fixedBillGiverDefs.Contains(thing.def));
         }
 
         private static List<Thing> GetAllPossibleIngredients(Bill bill, Pawn pawn, Thing billGiver)
@@ -156,7 +142,7 @@ namespace UpgradeQuality.Items
             {
                 return foundThings;
             }
-            var proc = new RegionProcessor_ThingToUpgrade(pawn, bill.ingredientSearchRadius, billGiver.Position, null, false);
+            var proc = new RegionProcessor_ThingToUpgrade(pawn, bill.ingredientSearchRadius, GetBillGiverRootCell(billGiver, pawn), null, false);
             RegionTraverser.BreadthFirstTraverse(validRegionAt, proc, 99999, RegionType.Set_Passable);
             proc.Sort();
             return proc.ValidItems;
@@ -165,7 +151,7 @@ namespace UpgradeQuality.Items
         private static bool TryFindBestBillIngredients(List<Thing> possibleItems, List<ThingCount> chosen, Thing itemToUpgrade)
         {
             chosen.Clear();
-            List<ThingDefCountClass> neededIngreds = UpgradeQualityUtility.GetNeededResources(itemToUpgrade);
+            List<ThingDefCountQuality> neededIngreds = UpgradeQualityUtility.GetNeededResources(itemToUpgrade);
 
             if (neededIngreds.NullOrEmpty())
             {
@@ -174,49 +160,62 @@ namespace UpgradeQuality.Items
             return TryFindBestBillIngredientsInSet_NoMix(possibleItems.Where(t => t != itemToUpgrade).ToList(), neededIngreds, chosen);
         }
 
-        private static bool TryFindBestBillIngredientsInSet_NoMix(List<Thing> availableThings, List<ThingDefCountClass> neededIngreds, List<ThingCount> chosen)
+        private static bool TryFindBestBillIngredientsInSet_NoMix(List<Thing> availableThings, List<ThingDefCountQuality> neededIngreds, List<ThingCount> chosen)
         {
             chosen.Clear();
             var AvailableCounts = new DefCountList();
             var AssignedThings = new HashSet<Thing>();
             AvailableCounts.GenerateFrom(availableThings);
-            foreach (ThingDefCountClass thingDefCount in neededIngreds)
+            foreach (ThingDefCountQuality ingredientToFind in neededIngreds)
             {
-                bool flag = false;
+                bool foundIngredient = false;
                 for (int i = 0; i < AvailableCounts.Count; i++)
                 {
-                    float num = (float)thingDefCount.count;
-                    bool flag2 = (double)num > (double)AvailableCounts.GetCount(i) || thingDefCount.thingDef != AvailableCounts.GetDef(i);
-                    if (!flag2)
+                    float remainingIngredientCount = ingredientToFind.Count;
+                    bool availableIsIngredient = remainingIngredientCount <= AvailableCounts.GetCount(i) && ingredientToFind.ThingDef == AvailableCounts.GetDef(i);
+                    if (availableIsIngredient)
                     {
                         foreach (Thing thing in availableThings)
                         {
-                            bool flag3 = thing.def != AvailableCounts.GetDef(i) || AssignedThings.Contains(thing);
-                            if (!flag3)
+                            bool thingIsIngredientNotUsed = thing.def == AvailableCounts.GetDef(i) && !AssignedThings.Contains(thing);
+                            if (thingIsIngredientNotUsed)
                             {
-                                int num2 = Mathf.Min(Mathf.FloorToInt(num), thing.stackCount);
-                                ThingCountUtility.AddToList(chosen, thing, num2);
-                                num -= (float)num2;
-                                AssignedThings.Add(thing);
-                                bool flag4 = (double)num < 0.001;
-                                if (flag4)
+                                var shouldAdd = false;
+                                if (thing.TryGetQuality(out QualityCategory qCat))
                                 {
-                                    flag = true;
-                                    float val = AvailableCounts.GetCount(i) - (float)thingDefCount.count;
-                                    AvailableCounts.SetCount(i, val);
-                                    break;
+                                    if (ingredientToFind.Range.Includes(qCat))
+                                    {
+                                        shouldAdd = true;
+                                    }
+                                }
+                                else if (ingredientToFind.Range == QualityRange.All)
+                                {
+                                    shouldAdd = true;
+                                }
+                                if (shouldAdd)
+                                {
+                                    int usedCount = Mathf.Min(Mathf.FloorToInt(remainingIngredientCount), thing.stackCount);
+                                    ThingCountUtility.AddToList(chosen, thing, usedCount);
+                                    remainingIngredientCount -= usedCount;
+                                    AssignedThings.Add(thing);
+                                    bool ingredientFullyFound = remainingIngredientCount < 0.001f;
+                                    if (ingredientFullyFound)
+                                    {
+                                        foundIngredient = true;
+                                        float remainingAvailableCount = AvailableCounts.GetCount(i) - ingredientToFind.Count;
+                                        AvailableCounts.SetCount(i, remainingAvailableCount);
+                                        break;
+                                    }
                                 }
                             }
                         }
-                        bool flag5 = flag;
-                        if (flag5)
+                        if (foundIngredient)
                         {
                             break;
                         }
                     }
                 }
-                bool flag6 = !flag;
-                if (flag6)
+                if (!foundIngredient)
                 {
                     return false;
                 }
