@@ -1,7 +1,6 @@
 ﻿using RimWorld;
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using UnityEngine;
 using Verse;
 using Verse.AI;
@@ -90,9 +89,13 @@ namespace UpgradeQuality.Items
                         return null;
                     }
                     var possibleIngredients = GetAllPossibleIngredients(bill, pawn, bench);
+                    DefCountList AvailableCounts = new DefCountList();
+                    AvailableCounts.GenerateFrom(possibleIngredients);
+                    HashSet<Thing> AssignedThings = new HashSet<Thing>();
                     foreach (Thing itemToUpgrade in list)
                     {
-                        if (TryFindBestBillIngredients(possibleIngredients, this.chosenIngThings, itemToUpgrade))
+                        AssignedThings.Clear();
+                        if (TryFindBestBillIngredients(possibleIngredients, this.chosenIngThings, itemToUpgrade, AvailableCounts, AssignedThings))
                         {
                             return StartNewUpgradeJob(bill, billGiver, itemToUpgrade, this.chosenIngThings);
                         }
@@ -136,11 +139,10 @@ namespace UpgradeQuality.Items
 
         private static List<Thing> GetAllPossibleIngredients(Bill bill, Pawn pawn, Thing billGiver)
         {
-            var foundThings = new List<Thing>();
             Region validRegionAt = pawn.Map.regionGrid.GetValidRegionAt(GetBillGiverRootCell(billGiver, pawn));
             if (validRegionAt == null)
             {
-                return foundThings;
+                return new List<Thing>();
             }
             var proc = new RegionProcessor_ThingToUpgrade(pawn, bill.ingredientSearchRadius, GetBillGiverRootCell(billGiver, pawn), null, false);
             RegionTraverser.BreadthFirstTraverse(validRegionAt, proc, 99999, RegionType.Set_Passable);
@@ -148,7 +150,7 @@ namespace UpgradeQuality.Items
             return proc.ValidItems;
         }
 
-        private static bool TryFindBestBillIngredients(List<Thing> possibleItems, List<ThingCount> chosen, Thing itemToUpgrade)
+        private static bool TryFindBestBillIngredients(List<Thing> possibleItems, List<ThingCount> chosen, Thing itemToUpgrade, DefCountList AvailableCounts, HashSet<Thing> AssignedThings)
         {
             chosen.Clear();
             List<ThingDefCountQuality> neededIngreds = UpgradeQualityUtility.GetNeededResources(itemToUpgrade);
@@ -157,15 +159,12 @@ namespace UpgradeQuality.Items
             {
                 return true;
             }
-            return TryFindBestBillIngredientsInSet_NoMix(possibleItems.Where(t => t != itemToUpgrade).ToList(), neededIngreds, chosen);
+            return TryFindBestBillIngredientsInSet_NoMix(possibleItems, neededIngreds, chosen, itemToUpgrade, AvailableCounts, AssignedThings);
         }
 
-        private static bool TryFindBestBillIngredientsInSet_NoMix(List<Thing> availableThings, List<ThingDefCountQuality> neededIngreds, List<ThingCount> chosen)
+        private static bool TryFindBestBillIngredientsInSet_NoMix(List<Thing> availableThings, List<ThingDefCountQuality> neededIngreds, List<ThingCount> chosen, Thing thingToIgnore, DefCountList AvailableCounts, HashSet<Thing> AssignedThings)
         {
             chosen.Clear();
-            var AvailableCounts = new DefCountList();
-            var AssignedThings = new HashSet<Thing>();
-            AvailableCounts.GenerateFrom(availableThings);
             foreach (ThingDefCountQuality ingredientToFind in neededIngreds)
             {
                 bool foundIngredient = false;
@@ -177,6 +176,10 @@ namespace UpgradeQuality.Items
                     {
                         foreach (Thing thing in availableThings)
                         {
+                            if (thing == thingToIgnore)
+                            {
+                                continue;
+                            }
                             bool thingIsIngredientNotUsed = thing.def == AvailableCounts.GetDef(i) && !AssignedThings.Contains(thing);
                             if (thingIsIngredientNotUsed)
                             {
@@ -356,7 +359,7 @@ namespace UpgradeQuality.Items
                 foreach (Thing thing in things)
                 {
                     ThingDef def = thing.def;
-                    this[def] += (float)thing.stackCount;
+                    this[def] += thing.stackCount;
                 }
             }
 

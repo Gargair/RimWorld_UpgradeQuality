@@ -68,7 +68,7 @@ namespace UpgradeQuality.Building
                 this.Destroy(DestroyMode.Vanish);
             }
             // The destroy implicitly cancels the upgrade.
-            comp.SetDesiredQualityTo(desiredQuality, keepQuality);
+                    comp.SetDesiredQualityTo(desiredQuality, keepQuality);
 
             worker.records.Increment(RecordDefOf.ThingsConstructed);
             if (thingToChange != null && thingToChange.GetStatValue(StatDefOf.WorkToBuild, true, -1) >= 9500f)
@@ -89,7 +89,7 @@ namespace UpgradeQuality.Building
             var comp = Comp;
             this.Destroy(DestroyMode.FailConstruction);
             // The destroy implicitly cancels the upgrade.
-            comp.SetDesiredQualityTo(desiredQuality, keepQuality);
+                comp.SetDesiredQualityTo(desiredQuality, keepQuality);
             Lord lord = worker.GetLord();
             if (lord != null)
             {
