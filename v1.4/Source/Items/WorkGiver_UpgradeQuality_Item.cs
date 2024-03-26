@@ -7,7 +7,7 @@ using Verse.AI;
 
 namespace UpgradeQuality.Items
 {
-    internal class WorkGiver_UpgradeQuality_Item : WorkGiver_Scanner
+    internal class WorkGiver_UpgradeQuality_Item : WorkGiver_DoBill
     {
         public WorkGiver_UpgradeQuality_Item()
         {
@@ -130,11 +130,6 @@ namespace UpgradeQuality.Items
             RegionTraverser.BreadthFirstTraverse(validRegionAt, proc, 99999, RegionType.Set_Passable);
             proc.Sort();
             return proc.ValidItems;
-        }
-
-        private bool ThingIsUsableBillGiver(Thing thing)
-        {
-            return (this.def.fixedBillGiverDefs != null && this.def.fixedBillGiverDefs.Contains(thing.def));
         }
 
         private static List<Thing> GetAllPossibleIngredients(Bill bill, Pawn pawn, Thing billGiver)
