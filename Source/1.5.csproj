@@ -5,7 +5,7 @@
     <AssemblyName>UpgradeQuality</AssemblyName>
     <AssemblyTitle>UpgradeQuality</AssemblyTitle>
     <Product>UpgradeQuality</Product>
-    <Copyright>Copyright © 2023</Copyright>
+    <Copyright>Copyright © 2024</Copyright>
     <Version>1.5.0</Version>
     <OutputPath>..\v1.5\Assemblies</OutputPath>
     <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
@@ -13,16 +13,16 @@
     <RepositoryType>git</RepositoryType>
     <RepositoryUrl>https://github.com/Gargair/RimWorld_UpgradeQuality</RepositoryUrl>
     <PackageLicenseFile>LICENSE.txt</PackageLicenseFile>
+    <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
+    <GenerateTargetFrameworkAttribute>false</GenerateTargetFrameworkAttribute>
+    <DefineConstants>$(DefineConstants);PatchCategory;V15</DefineConstants>
+    <IsPublishable>False</IsPublishable>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
-    <DefineConstants>$(DefineConstants);PatchCategory;V15</DefineConstants>
     <DebugType>full</DebugType>
-    <IsPublishable>False</IsPublishable>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
-    <DefineConstants>$(DefineConstants);PatchCategory;V15</DefineConstants>
     <DebugType>pdbonly</DebugType>
-    <IsPublishable>False</IsPublishable>
   </PropertyGroup>
   <ItemGroup>
     <None Include="..\LICENSE.txt">
