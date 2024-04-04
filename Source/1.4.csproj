@@ -6,8 +6,8 @@
     <AssemblyTitle>UpgradeQuality</AssemblyTitle>
     <Product>UpgradeQuality</Product>
     <Copyright>Copyright © 2023</Copyright>
-    <Version>1.5.0</Version>
-    <OutputPath>..\v1.5\Assemblies</OutputPath>
+    <Version>1.4.0</Version>
+    <OutputPath>..\v1.4\Assemblies</OutputPath>
     <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
     <Authors>Rakros</Authors>
     <RepositoryType>git</RepositoryType>
@@ -15,12 +15,12 @@
     <PackageLicenseFile>LICENSE.txt</PackageLicenseFile>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
-    <DefineConstants>$(DefineConstants);PatchCategory;V15</DefineConstants>
+    <DefineConstants>$(DefineConstants);V14</DefineConstants>
     <DebugType>full</DebugType>
     <IsPublishable>False</IsPublishable>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
-    <DefineConstants>$(DefineConstants);PatchCategory;V15</DefineConstants>
+    <DefineConstants>$(DefineConstants);V14</DefineConstants>
     <DebugType>pdbonly</DebugType>
     <IsPublishable>False</IsPublishable>
   </PropertyGroup>
@@ -31,26 +31,13 @@
     </None>
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="Lib.Harmony" Version="2.3.1.1">
+    <PackageReference Include="Krafs.Rimworld.Ref">
+      <Version>1.4.3901</Version>
       <ExcludeAssets>runtime</ExcludeAssets>
     </PackageReference>
-  </ItemGroup>
-  <ItemGroup>
-    <Reference Include="..\..\..\RimWorldWin64_Data\Managed\Assembly-CSharp.dll">
-      <Private>False</Private>
-    </Reference>
-    <Reference Include="System" />
-    <Reference Include="System.Core" />
-    <Reference Include="System.Xml.Linq" />
-    <Reference Include="System.Xml" />
-    <Reference Include="..\..\..\RimWorldWin64_Data\Managed\UnityEngine.dll">
-      <Private>False</Private>
-    </Reference>
-    <Reference Include="..\..\..\RimWorldWin64_Data\Managed\UnityEngine.CoreModule.dll">
-      <Private>False</Private>
-    </Reference>
-    <Reference Include="..\..\..\RimWorldWin64_Data\Managed\UnityEngine.IMGUIModule.dll">
-      <Private>False</Private>
-    </Reference>
+    <PackageReference Include="Lib.Harmony">
+      <Version>2.2.2</Version>
+      <ExcludeAssets>runtime</ExcludeAssets>
+    </PackageReference>
   </ItemGroup>
 </Project>

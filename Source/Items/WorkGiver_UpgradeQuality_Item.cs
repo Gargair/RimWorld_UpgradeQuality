@@ -132,11 +132,6 @@ namespace UpgradeQuality.Items
             return proc.ValidItems;
         }
 
-        //public override bool ThingIsUsableBillGiver(Thing thing)
-        //{
-        //    return (this.def.fixedBillGiverDefs != null && this.def.fixedBillGiverDefs.Contains(thing.def));
-        //}
-
         private static List<Thing> GetAllPossibleIngredients(Bill bill, Pawn pawn, Thing billGiver)
         {
             Region validRegionAt = pawn.Map.regionGrid.GetValidRegionAt(GetBillGiverRootCell(billGiver, pawn));

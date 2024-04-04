@@ -16,10 +16,18 @@ namespace UpgradeQuality.Building
             {
                 foreach (var thing in map.listerBuildings.allBuildingsColonist)
                 {
+#if V14
+                    var comp = thing.TryGetComp<Comp_UpgradeQuality_Building>();
+                    if (comp != null)
+                    {
+                        this.AddComponent(comp);
+                    }
+#else
                     if (thing.TryGetComp<Comp_UpgradeQuality_Building>(out var comp))
                     {
                         this.AddComponent(comp);
                     }
+#endif
                 }
             }
         }

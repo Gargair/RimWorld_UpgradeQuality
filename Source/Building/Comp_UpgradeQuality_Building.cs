@@ -165,7 +165,7 @@ namespace UpgradeQuality.Building
         {
             if (HasUpgradeDesignation)
             {
-                if(CompQuality != null && placedFrame != null && CompQuality.Quality != placedFrame.generatedForQuality)
+                if (CompQuality != null && placedFrame != null && CompQuality.Quality != placedFrame.generatedForQuality)
                 {
                     UpgradeQualityUtility.LogMessage(LogLevel.Debug, "Frame generated for different quality!");
                     PlaceFrame();

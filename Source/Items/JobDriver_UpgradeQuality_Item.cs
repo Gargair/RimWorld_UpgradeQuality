@@ -34,6 +34,15 @@ namespace UpgradeQuality.Items
         protected override IEnumerable<Toil> MakeNewToils()
         {
             this.FailOnDestroyedNullOrForbidden(TargetIndex.A);
+            base.AddEndCondition(delegate
+            {
+                Thing thing = base.GetActor().jobs.curJob.GetTarget(TargetIndex.A).Thing;
+                if (thing is Verse.Building && !thing.Spawned)
+                {
+                    return JobCondition.Incompletable;
+                }
+                return JobCondition.Ongoing;
+            });
             this.FailOnBurningImmobile(TargetIndex.A);
             this.FailOn(delegate ()
             {
@@ -271,7 +280,11 @@ namespace UpgradeQuality.Items
                 }
                 else if (curJob.bill.GetStoreMode() == BillStoreModeDefOf.SpecificStockpile)
                 {
+                    #if V14
+                    StoreUtility.TryFindBestBetterStoreCellForIn(products[0], actor, actor.Map, StoragePriority.Unstored, actor.Faction, curJob.bill.GetStoreZone().slotGroup, out invalid, true);
+                    #elif V15
                     StoreUtility.TryFindBestBetterStoreCellForIn(products[0], actor, actor.Map, StoragePriority.Unstored, actor.Faction, curJob.bill.GetSlotGroup(), out invalid, true);
+                    #endif
                 }
                 else
                 {

@@ -3,11 +3,15 @@ using RimWorld;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using System.Runtime.CompilerServices;
+using System.Text;
 using Verse;
 
 namespace UpgradeQuality.Building
 {
+#if PatchCategory
     [HarmonyPatchCategory("UpgradeBuildings")]
+#endif
     [HarmonyPatch(typeof(Frame), nameof(Frame.CompleteConstruction))]
     public class Frame_Patch_CompleteConstruction
     {
@@ -24,7 +28,9 @@ namespace UpgradeQuality.Building
         }
     }
 
+#if PatchCategory
     [HarmonyPatchCategory("UpgradeBuildings")]
+#endif
     [HarmonyPatch(typeof(Frame), nameof(Frame.FailConstruction))]
     public class Frame_Patch_FailConstruction
     {
@@ -41,7 +47,39 @@ namespace UpgradeQuality.Building
         }
     }
 
+#if V14
+    [HarmonyPatch(typeof(Frame), nameof(Frame.MaterialsNeeded))]
+    public class Frame_Patch_MaterialsNeeded
+    {
+        static bool Prefix(Frame __instance, ref List<ThingDefCountClass> __result)
+        {
+            if (FrameUtility.IsUpgradeBuildingFrame(__instance, out var frame))
+            {
+                __result = new List<ThingDefCountClass>();
+                var neededResouces = frame.NeededResources;
+                if (neededResouces != null)
+                {
+                    foreach (var thingDefCountClass in neededResouces)
+                    {
+                        int countInContainer = __instance.resourceContainer.TotalStackCountOfDef(thingDefCountClass.ThingDef);
+                        int countNeeded = thingDefCountClass.Count - countInContainer;
+                        if (countNeeded > 0)
+                        {
+                            __result.Add(new ThingDefCountClass(thingDefCountClass.ThingDef, countNeeded));
+                        }
+                    }
+                }
+                return false;
+            }
+            return true;
+        }
+    }
+#endif
+
+#if V15
+#if PatchCategory
     [HarmonyPatchCategory("UpgradeBuildings")]
+#endif
     [HarmonyPatch(typeof(Frame), nameof(Frame.TotalMaterialCost))]
     public class Frame_Patch_TotalMaterialCost
     {
@@ -55,8 +93,36 @@ namespace UpgradeQuality.Building
             return true;
         }
     }
+#endif
 
+#if V14
+    [HarmonyPatch(typeof(Frame), nameof(Frame.GetInspectString))]
+    internal static class Frame_Patch_GetInspectString
+    {
+
+        [HarmonyReversePatch]
+        [HarmonyPatch(typeof(ThingWithComps), nameof(ThingWithComps.GetInspectString))]
+        [MethodImpl(MethodImplOptions.NoInlining)]
+        static string BaseGetInspectString(Frame instance) { return null; }
+
+        static bool Prefix(Frame __instance, ref string __result)
+        {
+            if (FrameUtility.IsUpgradeBuildingFrame(__instance, out var frame))
+            {
+                StringBuilder stringBuilder = new StringBuilder();
+                stringBuilder.Append(BaseGetInspectString(__instance));
+                __result = frame.CustomGetInspectString(stringBuilder);
+                return false;
+            }
+            return true;
+        }
+    }
+#endif
+
+#if V15
+#if PatchCategory
     [HarmonyPatchCategory("UpgradeBuildings")]
+#endif
     [HarmonyPatch(typeof(Frame), nameof(Frame.GetInspectString))]
     public class Frame_GetInspectString
     {
@@ -106,8 +172,11 @@ namespace UpgradeQuality.Building
             }
         }
     }
+#endif
 
+#if PatchCategory
     [HarmonyPatchCategory("UpgradeBuildings")]
+#endif
     [HarmonyPatch(typeof(GenConstruct), "BlocksConstruction")]
     internal class ReplaceFrameNoBlock
     {
@@ -122,7 +191,9 @@ namespace UpgradeQuality.Building
         }
     }
 
+#if PatchCategory
     [HarmonyPatchCategory("UpgradeBuildings")]
+#endif
     [HarmonyPatch(typeof(GenSpawn), "SpawningWipes")]
     internal static class ReplaceFrameNoWipe
     {
