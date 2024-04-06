@@ -3,7 +3,8 @@
   <Excluded>
     <exclude>.git</exclude>
     <exclude>About\Preview.xcf</exclude>
-    <exclude>Shared\Textures\UI\DesQualityUp.dds</exclude>
+    <exclude>Shared\Textures\UpgradeQuality\UI\QualityUp.dds</exclude>
+    <exclude>Shared\Textures\UpgradeQuality\UI\DesQualityUp.dds</exclude>
     <exclude>Source</exclude>
     <exclude>v1.4\Assemblies\UpgradeQuality.pdb</exclude>
     <exclude>v1.5\Assemblies\UpgradeQuality.pdb</exclude>

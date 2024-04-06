@@ -16,7 +16,7 @@ namespace UpgradeQuality.Building
 
         public Command_UpgradeQuality_Building()
         {
-            icon = ContentFinder<Texture2D>.Get("UI/QualityUp");
+            icon = ContentFinder<Texture2D>.Get("UpgradeQuality/UI/QualityUp");
             defaultLabel = "UpgQlty.Labels.UpgradeBuilding".Translate();
             defaultDesc = "UpgQlty.Tooltips.UpgradeBuilding".Translate();
             action = () => Find.WindowStack.Add(new FloatMenu(GetFloatingOptions().ToList())

@@ -2,12 +2,12 @@
 <Defs>
   <DesignationDef>
     <defName>IncreaseQuality_Building</defName>
-    <texturePath>UI/DesQualityUp</texturePath>
+    <texturePath>UpgradeQuality/UI/DesQualityUp</texturePath>
     <targetType>Thing</targetType>
   </DesignationDef>
   <DesignationDef>
     <defName>IncreaseQuality_Items</defName>
-    <texturePath>UI/DesQualityUp</texturePath>
+    <texturePath>UpgradeQuality/UI/DesQualityUp</texturePath>
     <targetType>Thing</targetType>
   </DesignationDef>
 </Defs>
