@@ -9,8 +9,8 @@
     <fixedBillGiverDefs>
       <li>UpgQlty_UpgradeBench</li>
     </fixedBillGiverDefs>
-    <verb>upgrade item</verb>
-    <gerund>upgrading item</gerund>
+    <verb>upgrade item at</verb>
+    <gerund>upgrading item at</gerund>
     <requiredCapacities>
       <li>Manipulation</li>
     </requiredCapacities>
