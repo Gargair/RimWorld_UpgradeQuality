@@ -43,6 +43,10 @@ namespace UpgradeQuality.Building
 
         public void SetDesiredQualityTo(QualityCategory desiredQuality, bool keepQuality)
         {
+            if(this.desiredQuality == desiredQuality && this.keepQuality == keepQuality)
+            {
+                return;
+            }
             if (CompQuality?.Quality < desiredQuality)
             {
                 this.desiredQuality = desiredQuality;
@@ -154,11 +158,11 @@ namespace UpgradeQuality.Building
 
         private List<ThingDefCountQuality> InitializeResources()
         {
-            if (this.CompQuality != null && this.CompQuality.Quality < this.desiredQuality)
-            {
+            //if (this.CompQuality != null && this.CompQuality.Quality < this.desiredQuality)
+            //{
                 return UpgradeQualityUtility.GetNeededResources(this.parent);
-            }
-            return null;
+            //}
+            //return null;
         }
 
         public bool IsStillActive()
