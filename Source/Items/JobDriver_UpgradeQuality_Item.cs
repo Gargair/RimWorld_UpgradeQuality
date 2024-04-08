@@ -89,6 +89,8 @@ namespace UpgradeQuality.Items
             yield return Toils_Recipe.DoRecipeWork().FailOnDespawnedNullOrForbiddenPlacedThings(TargetIndex.A).FailOnCannotTouch(TargetIndex.A, PathEndMode.InteractionCell);
             yield return Toils_Recipe.CheckIfRecipeCanFinishNow();
             yield return FinishRecipeAndStartStoringProduct(TargetIndex.None);
+            yield return Toils_Haul.CarryHauledThingToCell(TargetIndex.B);
+            yield return Toils_Haul.PlaceCarriedThingInCellFacing(TargetIndex.B);
             yield break;
         }
 
@@ -205,7 +207,6 @@ namespace UpgradeQuality.Items
             {
                 Pawn actor = toil.actor;
                 Job curJob = actor.jobs.curJob;
-                JobDriver_UpgradeQuality_Item jobDriver_DoBill = (JobDriver_UpgradeQuality_Item)actor.jobs.curDriver;
                 UnfinishedUpgrade unfinishedThing = curJob.GetTarget(TargetIndex.B).Thing as UnfinishedUpgrade;
                 var thingToUpgrade = unfinishedThing.thingToUpgrade;
                 List<Thing> ingredients = CalculateIngredients(curJob, actor);
@@ -216,6 +217,11 @@ namespace UpgradeQuality.Items
                 if (qComp != null && qComp.Quality < QualityCategory.Legendary)
                 {
                     qComp.SetQuality(qComp.Quality + 1, ArtGenerationContext.Colony);
+                    var artComp = thingToUpgrade.TryGetComp<CompArt>();
+                    if (artComp != null)
+                    {
+                        artComp.JustCreatedBy(actor);
+                    }
                 }
 
                 var products = new List<Thing>
@@ -223,7 +229,7 @@ namespace UpgradeQuality.Items
                     thingToUpgrade
                 };
                 RecordsUtility.Notify_BillDone(actor, products);
-                if (((curJob != null) ? curJob.bill : null) == null)
+                if (curJob == null || curJob.bill == null)
                 {
                     for (int i = 0; i < products.Count; i++)
                     {
@@ -234,14 +240,6 @@ namespace UpgradeQuality.Items
                     }
                     return;
                 }
-                //if (curJob.bill.recipe.WorkAmountTotal((unfinishedThing != null) ? unfinishedThing.Stuff : null) >= 10000f && products.Count > 0)
-                //{
-                //    TaleRecorder.RecordTale(TaleDefOf.CompletedLongCraftingProject, new object[]
-                //    {
-                //        actor,
-                //        products[0].GetInnerIfMinified().def
-                //    });
-                //}
                 if (products.Any<Thing>())
                 {
                     Find.QuestManager.Notify_ThingsProduced(actor, products);
@@ -280,11 +278,11 @@ namespace UpgradeQuality.Items
                 }
                 else if (curJob.bill.GetStoreMode() == BillStoreModeDefOf.SpecificStockpile)
                 {
-                    #if V14
+#if V14
                     StoreUtility.TryFindBestBetterStoreCellForIn(products[0], actor, actor.Map, StoragePriority.Unstored, actor.Faction, curJob.bill.GetStoreZone().slotGroup, out invalid, true);
-                    #elif V15
+#elif V15
                     StoreUtility.TryFindBestBetterStoreCellForIn(products[0], actor, actor.Map, StoragePriority.Unstored, actor.Faction, curJob.bill.GetSlotGroup(), out invalid, true);
-                    #endif
+#endif
                 }
                 else
                 {
