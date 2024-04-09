@@ -25,10 +25,30 @@ namespace UpgradeQuality.Building
         {
             if (!HasUpgradeDesignation)
             {
+#if DEBUG
+                if (Find.Selector.IsSelected(parent))
+                {
+                    UpgradeQualityUtility.LogMessage(LogLevel.Information, "Faction:", (parent.Faction == Faction.OfPlayer).ToString());
+                    if (parent.GetInnerIfMinified() is Verse.Building buildingTmp)
+                    {
+                        UpgradeQualityUtility.LogMessage(LogLevel.Information, "IsKeepOptionEnabled:", UpgradeQuality.Settings.IsKeepOptionEnabled.ToString());
+                        if (buildingTmp.TryGetQuality(out var qc))
+                        {
+                            UpgradeQualityUtility.LogMessage(LogLevel.Information, "Quality:", qc.ToString());
+                        }
+                        else
+                        {
+                            UpgradeQualityUtility.LogMessage(LogLevel.Information, "No Quality");
+                        }
+                        var designator = BuildCopyCommandUtility.FindAllowedDesignator(buildingTmp.def, true);
+                        UpgradeQualityUtility.LogMessage(LogLevel.Information, "Designatior:", designator.ToStringSafe());
+                    }
+                }
+#endif
                 if (parent.Faction == Faction.OfPlayer &&
                     parent.GetInnerIfMinified() is Verse.Building building &&
-                    (UpgradeQuality.Settings.IsKeepOptionEnabled ||
-                        building.TryGetQuality(out var quality) && quality < QualityCategory.Legendary))
+                    (UpgradeQuality.Settings.IsKeepOptionEnabled || building.TryGetQuality(out var quality) && quality < QualityCategory.Legendary) &&
+                    BuildCopyCommandUtility.FindAllowedDesignator(building.def, true) != null)
                 {
                     yield return CreateChangeBuildingGizmo();
                 }
@@ -43,7 +63,7 @@ namespace UpgradeQuality.Building
 
         public void SetDesiredQualityTo(QualityCategory desiredQuality, bool keepQuality)
         {
-            if(this.desiredQuality == desiredQuality && this.keepQuality == keepQuality)
+            if (this.desiredQuality == desiredQuality && this.keepQuality == keepQuality)
             {
                 return;
             }
@@ -160,7 +180,7 @@ namespace UpgradeQuality.Building
         {
             //if (this.CompQuality != null && this.CompQuality.Quality < this.desiredQuality)
             //{
-                return UpgradeQualityUtility.GetNeededResources(this.parent);
+            return UpgradeQualityUtility.GetNeededResources(this.parent);
             //}
             //return null;
         }
