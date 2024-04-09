@@ -28,20 +28,20 @@ namespace UpgradeQuality.Building
 #if DEBUG
                 if (Find.Selector.IsSelected(parent))
                 {
-                    UpgradeQualityUtility.LogMessage(LogLevel.Information, "Faction:", (parent.Faction == Faction.OfPlayer).ToString());
+                    UpgradeQualityUtility.LogMessage("Is Player Faction:", (parent.Faction == Faction.OfPlayer));
                     if (parent.GetInnerIfMinified() is Verse.Building buildingTmp)
                     {
-                        UpgradeQualityUtility.LogMessage(LogLevel.Information, "IsKeepOptionEnabled:", UpgradeQuality.Settings.IsKeepOptionEnabled.ToString());
+                        UpgradeQualityUtility.LogMessage("IsKeepOptionEnabled:", UpgradeQuality.Settings.IsKeepOptionEnabled);
                         if (buildingTmp.TryGetQuality(out var qc))
                         {
-                            UpgradeQualityUtility.LogMessage(LogLevel.Information, "Quality:", qc.ToString());
+                            UpgradeQualityUtility.LogMessage("Quality:", qc);
                         }
                         else
                         {
-                            UpgradeQualityUtility.LogMessage(LogLevel.Information, "No Quality");
+                            UpgradeQualityUtility.LogMessage("No Quality");
                         }
                         var designator = BuildCopyCommandUtility.FindAllowedDesignator(buildingTmp.def, true);
-                        UpgradeQualityUtility.LogMessage(LogLevel.Information, "Designatior:", designator.ToStringSafe());
+                        UpgradeQualityUtility.LogMessage("Designatior:", designator);
                     }
                 }
 #endif
@@ -103,7 +103,9 @@ namespace UpgradeQuality.Building
                 placedFrame.Destroy(DestroyMode.Cancel);
                 placedFrame = null;
             }
-            UpgradeQualityUtility.LogMessage(LogLevel.Debug, "Creating Frame");
+#if DEBUG && DEBUGBUILDINGS
+            UpgradeQualityUtility.LogMessage("Creating Frame");
+#endif
             Frame_UpgradeQuality_Building frame = new Frame_UpgradeQuality_Building();
             frame.def = FrameUtility.GetFrameDefForThingDef(parent.def);
             frame.SetStuffDirect(parent.Stuff);
@@ -114,13 +116,17 @@ namespace UpgradeQuality.Building
             frame.SetFactionDirect(parent.Faction);
             frame.generatedForQuality = CompQuality.Quality;
             frame.NeededResources = InitializeResources();
-            UpgradeQualityUtility.LogMessage(LogLevel.Debug, "Placing Frame");
+#if DEBUG && DEBUGBUILDINGS
+            UpgradeQualityUtility.LogMessage("Placing Frame");
+#endif
             placedFrame = (Frame_UpgradeQuality_Building)GenSpawn.Spawn(frame, parent.Position, parent.Map, parent.Rotation);
         }
 
         public void CancelUpgrade()
         {
-            UpgradeQualityUtility.LogMessage(LogLevel.Debug, "CancelUpgrade");
+#if DEBUG && DEBUGBUILDINGS
+            UpgradeQualityUtility.LogMessage("CancelUpgrade");
+#endif
             desiredQuality = QualityCategory.Awful;
             keepQuality = false;
             if (DesignationManager != null)
@@ -133,7 +139,9 @@ namespace UpgradeQuality.Building
             }
             if (placedFrame != null)
             {
-                UpgradeQualityUtility.LogMessage(LogLevel.Debug, "Killing Frame");
+#if DEBUG && DEBUGBUILDINGS
+                UpgradeQualityUtility.LogMessage("Killing Frame");
+#endif
                 if (placedFrame.Spawned)
                 {
                     placedFrame.Destroy(DestroyMode.Cancel);
@@ -178,11 +186,7 @@ namespace UpgradeQuality.Building
 
         private List<ThingDefCountQuality> InitializeResources()
         {
-            //if (this.CompQuality != null && this.CompQuality.Quality < this.desiredQuality)
-            //{
             return UpgradeQualityUtility.GetNeededResources(this.parent);
-            //}
-            //return null;
         }
 
         public bool IsStillActive()
@@ -191,14 +195,18 @@ namespace UpgradeQuality.Building
             {
                 if (CompQuality != null && placedFrame != null && CompQuality.Quality != placedFrame.generatedForQuality)
                 {
-                    UpgradeQualityUtility.LogMessage(LogLevel.Debug, "Frame generated for different quality!");
+#if DEBUG && DEBUGBUILDINGS
+                    UpgradeQualityUtility.LogMessage("Frame generated for different quality!");
+#endif
                     PlaceFrame();
                 }
                 return true;
             }
             if (placedFrame != null)
             {
-                UpgradeQualityUtility.LogMessage(LogLevel.Debug, "Found Frame without designation.");
+#if DEBUG && DEBUGBUILDINGS
+                UpgradeQualityUtility.LogMessage("Found Frame without designation.");
+#endif
                 CancelUpgrade();
             }
             if (keepQuality)

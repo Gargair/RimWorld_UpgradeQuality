@@ -1,7 +1,6 @@
 ﻿using RimWorld;
 using System;
 using System.Collections.Generic;
-using System.Reflection;
 using UnityEngine;
 using Verse;
 using Verse.AI;
@@ -48,29 +47,39 @@ namespace UpgradeQuality.Items
 
         public override Job JobOnThing(Pawn pawn, Thing bench, bool forced = false)
         {
-            UpgradeQualityUtility.LogMessage(LogLevel.Debug, "JobOnThing on", bench.ThingID, "for", pawn.Name.ToString());
+#if DEBUG && DEBUGITEMS
+            UpgradeQualityUtility.LogMessage("JobOnThing on", bench.ThingID, "for", pawn.Name);
+#endif
             IBillGiver billGiver = bench as IBillGiver;
             if (billGiver == null || !this.ThingIsUsableBillGiver(bench) || !billGiver.CurrentlyUsableForBills() || !billGiver.BillStack.AnyShouldDoNow || bench.IsBurning() || bench.IsForbidden(pawn))
             {
-                UpgradeQualityUtility.LogMessage(LogLevel.Debug, "Bench not usable");
+#if DEBUG && DEBUGITEMS
+                UpgradeQualityUtility.LogMessage("Bench not usable");
+#endif
                 return null;
             }
 
             if (!pawn.CanReserve(bench, 1, -1, null, false))
             {
-                UpgradeQualityUtility.LogMessage(LogLevel.Debug, "Pawn cant reserve");
+#if DEBUG && DEBUGITEMS
+                UpgradeQualityUtility.LogMessage("Pawn cant reserve");
+#endif
                 return null;
             }
             if (!pawn.CanReserveAndReach(bench.InteractionCell, PathEndMode.OnCell, Danger.Some, 1, -1, null, false))
             {
-                UpgradeQualityUtility.LogMessage(LogLevel.Debug, "Pawn cant reserve or reach");
+#if DEBUG && DEBUGITEMS
+                UpgradeQualityUtility.LogMessage("Pawn cant reserve or reach");
+#endif
                 return null;
             }
             billGiver.BillStack.RemoveIncompletableBills();
             Job job = WorkGiverUtility.HaulStuffOffBillGiverJob(pawn, billGiver, null);
             if (job != null)
             {
-                UpgradeQualityUtility.LogMessage(LogLevel.Debug, "Hauling off");
+#if DEBUG && DEBUGITEMS
+                UpgradeQualityUtility.LogMessage("Hauling off");
+#endif
                 return job;
             }
             if (billGiver.BillStack.Count == 0)
@@ -84,7 +93,9 @@ namespace UpgradeQuality.Items
             foreach (Bill bill in billGiver.BillStack)
             {
                 bool shouldSkip = (bill.recipe.requiredGiverWorkType != null && bill.recipe.requiredGiverWorkType != this.def.workType) || (Find.TickManager.TicksGame < bill.nextTickToSearchForIngredients && FloatMenuMakerMap.makingFor != pawn) || !bill.ShouldDoNow() || !bill.PawnAllowedToStartAnew(pawn);
-                UpgradeQualityUtility.LogMessage(LogLevel.Debug, "Checking bill", bill.recipe.defName, "shouldSkip:", shouldSkip.ToString());
+#if DEBUG && DEBUGITEMS
+                UpgradeQualityUtility.LogMessage("Checking bill", bill.recipe.defName, "shouldSkip:", shouldSkip);
+#endif
                 if (!shouldSkip)
                 {
                     if (!bill.recipe.PawnSatisfiesSkillRequirements(pawn))
@@ -95,33 +106,45 @@ namespace UpgradeQuality.Items
                     var unfinishedThing = FindUnfinishedUpgradeThing(pawn, bench, bill);
                     if (unfinishedThing != null)
                     {
-                        UpgradeQualityUtility.LogMessage(LogLevel.Debug, "Found unfinished thing", unfinishedThing.ThingID);
+#if DEBUG && DEBUGITEMS
+                        UpgradeQualityUtility.LogMessage("Found unfinished thing", unfinishedThing.ThingID);
+#endif
                         return StartNewUpgradeJob(bill, billGiver, unfinishedThing, new List<ThingCount>());
                     }
                     List<Thing> list = FindItemsToUpgrade(pawn, bench, bill);
                     if (list.NullOrEmpty())
                     {
-                        UpgradeQualityUtility.LogMessage(LogLevel.Debug, "No items to upgrade");
+#if DEBUG && DEBUGITEMS
+                        UpgradeQualityUtility.LogMessage("No items to upgrade");
+#endif
                         JobFailReason.Is("UpgQlty.Messages.NoUpgradeItems".Translate(), null);
                         continue;
                     }
                     var possibleIngredients = GetAllPossibleIngredients(bill, pawn, bench);
-                    UpgradeQualityUtility.LogMessage(LogLevel.Debug, "Found", possibleIngredients.Count.ToString(), "possible ingredients");
+#if DEBUG && DEBUGITEMS
+                    UpgradeQualityUtility.LogMessage("Found", possibleIngredients.Count, "possible ingredients");
+#endif
                     DefCountList AvailableCounts = new DefCountList();
                     HashSet<Thing> AssignedThings = new HashSet<Thing>();
                     foreach (Thing itemToUpgrade in list)
                     {
-                        UpgradeQualityUtility.LogMessage(LogLevel.Debug, "Checking", itemToUpgrade.ThingID);
+#if DEBUG && DEBUGITEMS
+                        UpgradeQualityUtility.LogMessage("Checking", itemToUpgrade.ThingID);
+#endif
                         AssignedThings.Clear();
                         AvailableCounts.GenerateFrom(possibleIngredients);
                         if (TryFindBestBillIngredients(possibleIngredients, this.chosenIngThings, itemToUpgrade, AvailableCounts, AssignedThings))
                         {
-                            UpgradeQualityUtility.LogMessage(LogLevel.Debug, "Starting job");
+#if DEBUG && DEBUGITEMS
+                            UpgradeQualityUtility.LogMessage("Starting job");
+#endif
                             return StartNewUpgradeJob(bill, billGiver, itemToUpgrade, this.chosenIngThings);
                         }
                         else
                         {
-                            UpgradeQualityUtility.LogMessage(LogLevel.Debug, "Not enough ingredients");
+#if DEBUG && DEBUGITEMS
+                            UpgradeQualityUtility.LogMessage("Not enough ingredients");
+#endif
                             JobFailReason.Is("MissingMaterials".Translate("Ingredients".Translate()));
                         }
                     }
@@ -247,7 +270,9 @@ namespace UpgradeQuality.Items
 
         private static Job StartNewUpgradeJob(Bill bill, IBillGiver workbench, Thing itemToUpgrade, IList<ThingCount> ingredients)
         {
-            UpgradeQualityUtility.LogMessage(LogLevel.Debug, "Starting new upgrade job", bill.recipe.defName, bill.GetType().FullName, itemToUpgrade.def.defName, ingredients.ToString());
+#if DEBUG && DEBUGITEMS
+            UpgradeQualityUtility.LogMessage("Starting new upgrade job", bill.recipe.defName, bill.GetType().FullName, itemToUpgrade.def.defName, ingredients);
+#endif
             Job job = new Job(UpgradeQualityDefOf.Jobs.IncreaseQuality_Job, (Thing)workbench)
             {
                 haulMode = HaulMode.ToCellNonStorage,
@@ -281,7 +306,7 @@ namespace UpgradeQuality.Items
             }
             else
             {
-                UpgradeQualityUtility.LogMessage(LogLevel.Error, "Tried to find bill ingredients for", ((billGiver != null) ? billGiver.ToString() : "<null>"), "which has no interaction cell.");
+                UpgradeQualityUtility.LogError("Tried to find bill ingredients for", billGiver, "which has no interaction cell.");
                 return forPawn.Position;
             }
         }

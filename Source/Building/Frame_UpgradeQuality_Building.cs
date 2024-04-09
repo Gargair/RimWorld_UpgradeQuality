@@ -74,8 +74,9 @@ namespace UpgradeQuality.Building
 
         public void CustomCompleteConstruction(Pawn worker)
         {
-            UpgradeQualityUtility.LogMessage(LogLevel.Debug, "CustomCompleteConstruction");
-
+#if DEBUG && DEBUGBUILDINGS
+            UpgradeQualityUtility.LogMessage("CustomCompleteConstruction");
+#endif
             this.resourceContainer.ClearAndDestroyContents(DestroyMode.Vanish);
 
             var qualityComp = thingToChange.GetComp<CompQuality>();

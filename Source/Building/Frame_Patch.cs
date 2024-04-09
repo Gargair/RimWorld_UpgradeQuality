@@ -17,10 +17,14 @@ namespace UpgradeQuality.Building
     {
         static bool Prefix(Frame __instance, Pawn worker)
         {
-            UpgradeQualityUtility.LogMessage(LogLevel.Debug, "CompleteConstruction Prefix");
+#if DEBUG && DEBUGBUILDINGS
+            UpgradeQualityUtility.LogMessage("CompleteConstruction Prefix");
+#endif
             if (FrameUtility.IsUpgradeBuildingFrame(__instance, out var frame))
             {
-                UpgradeQualityUtility.LogMessage(LogLevel.Debug, "Found custom Frame");
+#if DEBUG && DEBUGBUILDINGS
+                UpgradeQualityUtility.LogMessage("Found custom Frame");
+#endif
                 frame.CustomCompleteConstruction(worker);
                 return false;
             }
@@ -36,10 +40,14 @@ namespace UpgradeQuality.Building
     {
         static bool Prefix(Frame __instance, Pawn worker)
         {
-            UpgradeQualityUtility.LogMessage(LogLevel.Debug, "FailConstruction Prefix");
+#if DEBUG && DEBUGBUILDINGS
+            UpgradeQualityUtility.LogMessage("FailConstruction Prefix");
+#endif
             if (FrameUtility.IsUpgradeBuildingFrame(__instance, out var frame))
             {
-                UpgradeQualityUtility.LogMessage(LogLevel.Debug, "Found custom Frame");
+#if DEBUG && DEBUGBUILDINGS
+                UpgradeQualityUtility.LogMessage("Found custom Frame");
+#endif
                 frame.CustomFailConstruction(worker);
                 return false;
             }
@@ -138,37 +146,43 @@ namespace UpgradeQuality.Building
             {
                 if (instruction.LoadsField(defField))
                 {
-                    UpgradeQualityUtility.LogMessage(LogLevel.Debug, "Found start field for replace");
+#if DEBUG && DEBUGBUILDINGS
+                    UpgradeQualityUtility.LogMessage("Found start field for replace");
+#endif
                     inReplacing = true;
                 }
                 if (!inReplacing)
                 {
                     yield return instruction;
                 }
+#if DEBUG && DEBUGBUILDINGS
                 else
                 {
-                    UpgradeQualityUtility.LogMessage(LogLevel.Debug, "Skipped instruction", instruction.ToString());
+                    UpgradeQualityUtility.LogMessage("Skipped instruction", instruction.ToString());
                 }
+#endif
                 if (instruction.Calls(costListAdjustedMethod))
                 {
-                    UpgradeQualityUtility.LogMessage(LogLevel.Debug, "Found end call for replace. Emitting call");
+#if DEBUG && DEBUGBUILDINGS
+                    UpgradeQualityUtility.LogMessage("Found end call for replace. Emitting call");
+#endif
                     yield return CodeInstruction.Call(typeof(Frame), nameof(Frame.TotalMaterialCost));
                     didReplace = true;
                     inReplacing = false;
                 }
                 if (instruction.Calls(totalMaterialCostMethod))
                 {
-                    UpgradeQualityUtility.LogMessage(LogLevel.Warning, "Found replacing method. If you see this warning please inform mod author. It is likely this can be ignored otherwise.");
+                    UpgradeQualityUtility.LogWarning("Found replacing method. If you see this warning please inform mod author. It is likely this can be ignored otherwise.");
                     foundTotalMaterialCostMethod = true;
                 }
             }
             if (!inReplacing && !didReplace && !foundTotalMaterialCostMethod)
             {
-                UpgradeQualityUtility.LogMessage(LogLevel.Error, "Transpiler for Frame.GetInspectString did not find its anchor.");
+                UpgradeQualityUtility.LogError("Transpiler for Frame.GetInspectString did not find its anchor.");
             }
             if (inReplacing)
             {
-                UpgradeQualityUtility.LogMessage(LogLevel.Error, "Transpiler for Frame.GetInspectString did not find ending instruction.");
+                UpgradeQualityUtility.LogError("Transpiler for Frame.GetInspectString did not find ending instruction.");
             }
         }
     }

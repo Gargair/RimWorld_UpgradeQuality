@@ -15,7 +15,7 @@
     <PackageLicenseFile>LICENSE.txt</PackageLicenseFile>
     <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
     <GenerateTargetFrameworkAttribute>false</GenerateTargetFrameworkAttribute>
-    <DefineConstants>$(DefineConstants);V14</DefineConstants>
+    <DefineConstants>$(DefineConstants);V14;DEBUGBUILDINGS;DEBUGITEMS</DefineConstants>
     <IsPublishable>False</IsPublishable>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">

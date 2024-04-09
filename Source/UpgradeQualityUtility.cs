@@ -7,7 +7,6 @@ using UnityEngine;
 using UpgradeQuality.Building;
 using UpgradeQuality.Items;
 using Verse;
-using Verse.AI;
 
 namespace UpgradeQuality
 {
@@ -24,8 +23,9 @@ namespace UpgradeQuality
                     thingDef.comps.Add(upgradeBuildingCompProps);
                 }
             }
-
-            LogMessage(LogLevel.Debug, "Finished adding comps to thingDefs");
+#if DEBUG
+            LogMessage("Finished adding comps to thingDefs");
+#endif
             var harmony = new Harmony("rakros.rimworld.upgradequality");
             FrameUtility.AddCustomFrames();
 #if PatchCategory
@@ -35,8 +35,8 @@ namespace UpgradeQuality
             }
             catch (Exception e)
             {
-                LogMessage(LogLevel.Error, e.ToString());
-                LogMessage(LogLevel.Error, "Upgrading of items will not work.");
+                LogError(e);
+                LogError("Upgrading of items will not work.");
             }
             try
             {
@@ -44,21 +44,21 @@ namespace UpgradeQuality
             }
             catch (Exception e)
             {
-                LogMessage(LogLevel.Error, e.ToString());
-                LogMessage(LogLevel.Error, "Upgrading of buildings will not work.");
+                LogError(e);
+                LogError("Upgrading of buildings will not work.");
             }
 #else
             harmony.PatchAll();
-            var innerDisplayClass = AccessTools.FirstInner(typeof(Toils_Haul), (inner) => inner.Name.Contains("<>c__DisplayClass6_0"));
+            var innerDisplayClass = AccessTools.FirstInner(typeof(Verse.AI.Toils_Haul), (inner) => inner.Name.Contains("<>c__DisplayClass6_0"));
             if (innerDisplayClass == null)
             {
-                LogMessage(LogLevel.Error, "Failed to find type for patching of Toils_Haul");
+                LogError("Failed to find type for patching of Toils_Haul");
                 return;
             }
             var method = AccessTools.FirstMethod(innerDisplayClass, (m) => m.Name.Contains("<PlaceHauledThingInCell>b__0"));
             if (method == null)
             {
-                LogMessage(LogLevel.Error, "Failed to find method for patching of Toils_Haul");
+                LogError("Failed to find method for patching of Toils_Haul");
                 return;
             }
             var transpiler = AccessTools.Method(typeof(Toils_Haul_Patch_PlacedThings), nameof(Toils_Haul_Patch_PlacedThings.Transpiler));
@@ -68,27 +68,22 @@ namespace UpgradeQuality
 
         public static UpgradeQualitySettings Settings;
 
-        public static LogLevel logLevel = LogLevel.Information;
-
-        public static void LogMessage(LogLevel logLevel, params string[] messages)
+        public static void LogWarning(params object[] messages)
         {
-            var actualMessage = messages.Aggregate("[UpgradeQuality]", (logMessage, message) => logMessage + " " + message);
-            if (logLevel > UpgradeQualityUtility.logLevel)
-            {
-                return;
-            }
-            switch (logLevel)
-            {
-                case LogLevel.Error:
-                    Log.Error(actualMessage);
-                    break;
-                case LogLevel.Warning:
-                    Log.Warning(actualMessage);
-                    break;
-                default:
-                    Log.Message(actualMessage);
-                    break;
-            }
+            var actualMessage = messages.Aggregate("[UpgradeQuality]", (logMessage, message) => logMessage + " " + message.ToStringSafe());
+            Log.Warning(actualMessage);
+        }
+
+        public static void LogError(params object[] messages)
+        {
+            var actualMessage = messages.Aggregate("[UpgradeQuality]", (logMessage, message) => logMessage + " " + message.ToStringSafe());
+            Log.Error(actualMessage);
+        }
+
+        public static void LogMessage(params object[] messages)
+        {
+            var actualMessage = messages.Aggregate("[UpgradeQuality]", (logMessage, message) => logMessage + " " + message.ToStringSafe());
+            Log.Message(actualMessage);
         }
 
         private static readonly Dictionary<ValueTuple<ThingDef, ThingDef>, List<ThingDefCountQuality>> CachedBaseCosts = new Dictionary<(ThingDef, ThingDef), List<ThingDefCountQuality>>();
@@ -163,21 +158,12 @@ namespace UpgradeQuality
                 case QualityCategory.Masterwork:
                     return UpgradeQuality.Settings.Factor_Masterwork_Legendary;
                 case QualityCategory.Legendary:
-                    LogMessage(LogLevel.Error, "Requested multiplier for legendary quality. What?");
+                    LogError("Requested multiplier for legendary quality. What?");
                     return 0;
                 default:
-                    LogMessage(LogLevel.Error, $"What the hell is {fromQuality} quality?");
+                    LogError($"What the hell is {fromQuality} quality?");
                     return 0;
             }
         }
-    }
-
-    public enum LogLevel
-    {
-        None = 0,
-        Error = 1,
-        Warning = 2,
-        Information = 3,
-        Debug = 4,
     }
 }

@@ -14,7 +14,7 @@ namespace UpgradeQuality.Building
         public static ThingDef GetFrameDefForThingDef(ThingDef def)
         {
             if (frameCache.ContainsKey(def)) return frameCache[def];
-            UpgradeQualityUtility.LogMessage(LogLevel.Error, $"Missing frame def for {def.defName} in framecache. Wrong load order?");
+            UpgradeQualityUtility.LogError($"Missing frame def for {def.defName} in framecache. Wrong load order?");
             Type typeFromHandle = typeof(ThingDef);
             HashSet<ushort> h = ((Dictionary<Type, HashSet<ushort>>)AccessTools.Field(typeof(ShortHashGiver), "takenHashesPerDeftype").GetValue(null))[typeFromHandle];
             var frameDef = NewReplaceFrameDef_Thing(def);

@@ -99,39 +99,55 @@ namespace UpgradeQuality.Items
             Toil toil = ToilMaker.MakeToil("MakeUnfinishedThingIfNeeded");
             toil.initAction = delegate ()
             {
-                UpgradeQualityUtility.LogMessage(LogLevel.Debug, "Init MakeUnfinishedThingIfNeeded");
+#if DEBUG && DEBUGITEMS
+                UpgradeQualityUtility.LogMessage("Init MakeUnfinishedThingIfNeeded");
+#endif
                 Pawn actor = toil.actor;
                 Job curJob = actor.jobs.curJob;
                 if (!curJob.RecipeDef.UsesUnfinishedThing)
                 {
-                    UpgradeQualityUtility.LogMessage(LogLevel.Debug, "Not using unfinished thing");
+#if DEBUG && DEBUGITEMS
+                    UpgradeQualityUtility.LogMessage("Not using unfinished thing");
+#endif
                     return;
                 }
                 if (curJob.GetTarget(TargetIndex.B).Thing is UnfinishedThing)
                 {
-                    UpgradeQualityUtility.LogMessage(LogLevel.Debug, "Already have unfinished thing");
+#if DEBUG && DEBUGITEMS
+                    UpgradeQualityUtility.LogMessage("Already have unfinished thing");
+#endif
                     return;
                 }
                 List<Thing> list = CalculateIngredients(curJob, actor);
-                UpgradeQualityUtility.LogMessage(LogLevel.Debug, "Calculated ingredients");
+#if DEBUG && DEBUGITEMS
+                UpgradeQualityUtility.LogMessage("Calculated ingredients");
+#endif
                 for (int i = 0; i < list.Count; i++)
                 {
                     Thing thing2 = list[i];
                     actor.Map.designationManager.RemoveAllDesignationsOn(thing2, false);
-                    UpgradeQualityUtility.LogMessage(LogLevel.Debug, "Despawning", thing2.GetUniqueLoadID());
+#if DEBUG && DEBUGITEMS
+                    UpgradeQualityUtility.LogMessage("Despawning", thing2.GetUniqueLoadID());
+#endif
                     thing2.DeSpawnOrDeselect(DestroyMode.Vanish);
                 }
                 UnfinishedUpgrade unfinishedThing = (UnfinishedUpgrade)ThingMaker.MakeThing(curJob.RecipeDef.unfinishedThingDef);
-                UpgradeQualityUtility.LogMessage(LogLevel.Debug, "Created unfinished thing");
-                UpgradeQualityUtility.LogMessage(LogLevel.Debug, curJob.bill.GetType().FullName);
+#if DEBUG && DEBUGITEMS
+                UpgradeQualityUtility.LogMessage("Created unfinished thing");
+                UpgradeQualityUtility.LogMessage(curJob.bill.GetType().FullName);
+#endif
                 unfinishedThing.Creator = actor;
                 unfinishedThing.BoundBill = (Bill_ProductionWithUft)curJob.bill;
                 unfinishedThing.ingredients = list.Where(t => t != thingToUpgrade).ToList();
                 unfinishedThing.workLeft = curJob.bill.GetWorkAmount(unfinishedThing);
                 unfinishedThing.thingToUpgrade = thingToUpgrade;
-                UpgradeQualityUtility.LogMessage(LogLevel.Debug, "Spawning unfinished thing");
+#if DEBUG && DEBUGITEMS
+                UpgradeQualityUtility.LogMessage("Spawning unfinished thing");
+#endif
                 GenSpawn.Spawn(unfinishedThing, curJob.GetTarget(TargetIndex.A).Cell, actor.Map, WipeMode.Vanish);
-                UpgradeQualityUtility.LogMessage(LogLevel.Debug, "Spawned unfinished thing");
+#if DEBUG && DEBUGITEMS
+                UpgradeQualityUtility.LogMessage("Spawned unfinished thing");
+#endif
                 curJob.SetTarget(TargetIndex.B, unfinishedThing);
                 actor.Reserve(unfinishedThing, curJob, 1, -1, null, true);
             };
@@ -155,15 +171,7 @@ namespace UpgradeQuality.Items
                 {
                     if (job.placedThings[i].Count <= 0)
                     {
-                        Log.Error(string.Concat(new object[]
-                        {
-                            "PlacedThing ",
-                            job.placedThings[i],
-                            " with count ",
-                            job.placedThings[i].Count,
-                            " for job ",
-                            job
-                        }));
+                        UpgradeQualityUtility.LogError("PlacedThing ", job.placedThings[i], " with count ", job.placedThings[i].Count, " for job ", job);
                     }
                     else
                     {
@@ -179,7 +187,7 @@ namespace UpgradeQuality.Items
                         job.placedThings[i].Count = 0;
                         if (list.Contains(thing))
                         {
-                            Log.Error("Tried to add ingredient from job placed targets twice: " + thing);
+                            UpgradeQualityUtility.LogError("Tried to add ingredient from job placed targets twice:", thing);
                         }
                         else
                         {
@@ -235,7 +243,7 @@ namespace UpgradeQuality.Items
                     {
                         if (!GenPlace.TryPlaceThing(products[i], actor.Position, actor.Map, ThingPlaceMode.Near, null, null, default(Rot4)))
                         {
-                            UpgradeQualityUtility.LogMessage(LogLevel.Error, actor.ToString(), "could not drop recipe product", products[i].ToString(), "near", actor.Position.ToString());
+                            UpgradeQualityUtility.LogError(actor, "could not drop recipe product", products[i], "near", actor.Position);
                         }
                     }
                     return;
@@ -255,7 +263,7 @@ namespace UpgradeQuality.Items
                     {
                         if (!GenPlace.TryPlaceThing(products[j], actor.Position, actor.Map, ThingPlaceMode.Near, null, null, default(Rot4)))
                         {
-                            UpgradeQualityUtility.LogMessage(LogLevel.Error, actor.ToString(), "could not drop recipe product", products[j].ToString(), "near", actor.Position.ToString());
+                            UpgradeQualityUtility.LogError(actor, "could not drop recipe product", products[j], "near", actor.Position);
                         }
                     }
                     actor.jobs.EndCurrentJob(JobCondition.Succeeded, true, true);
@@ -267,7 +275,7 @@ namespace UpgradeQuality.Items
                     {
                         if (!GenPlace.TryPlaceThing(products[k], actor.Position, actor.Map, ThingPlaceMode.Near, null, null, default(Rot4)))
                         {
-                            UpgradeQualityUtility.LogMessage(LogLevel.Error, actor.ToString(), "could not drop recipe product", products[k].ToString(), "near", actor.Position.ToString());
+                            UpgradeQualityUtility.LogError(actor, "could not drop recipe product", products[k], "near", actor.Position);
                         }
                     }
                 }
@@ -301,7 +309,7 @@ namespace UpgradeQuality.Items
                 }
                 if (!GenPlace.TryPlaceThing(products[0], actor.Position, actor.Map, ThingPlaceMode.Near, null, null, default(Rot4)))
                 {
-                    UpgradeQualityUtility.LogMessage(LogLevel.Error, "Bill doer could not drop product", products[0].ToString(), "near", actor.Position.ToString());
+                    UpgradeQualityUtility.LogError(actor, "could not drop product", products[0], "near", actor.Position);
                 }
                 actor.jobs.EndCurrentJob(JobCondition.Succeeded, true, true);
             };
