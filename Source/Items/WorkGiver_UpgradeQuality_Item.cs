@@ -73,7 +73,14 @@ namespace UpgradeQuality.Items
                 UpgradeQualityUtility.LogMessage(LogLevel.Debug, "Hauling off");
                 return job;
             }
-            string latestReason = "UpgQlty.Messages.NoUpgradeItems".Translate();
+            if (billGiver.BillStack.Count == 0)
+            {
+#if !V14
+                JobFailReason.IsSilent();
+#endif
+                return null;
+            }
+            JobFailReason.Is("UpgQlty.Messages.NoUpgradeItems".Translate(), null);
             foreach (Bill bill in billGiver.BillStack)
             {
                 bool shouldSkip = (bill.recipe.requiredGiverWorkType != null && bill.recipe.requiredGiverWorkType != this.def.workType) || (Find.TickManager.TicksGame < bill.nextTickToSearchForIngredients && FloatMenuMakerMap.makingFor != pawn) || !bill.ShouldDoNow() || !bill.PawnAllowedToStartAnew(pawn);
@@ -83,7 +90,7 @@ namespace UpgradeQuality.Items
                     if (!bill.recipe.PawnSatisfiesSkillRequirements(pawn))
                     {
                         JobFailReason.Is("MissingSkill".Translate(), null);
-                        return null;
+                        continue;
                     }
                     var unfinishedThing = FindUnfinishedUpgradeThing(pawn, bench, bill);
                     if (unfinishedThing != null)
@@ -96,12 +103,11 @@ namespace UpgradeQuality.Items
                     {
                         UpgradeQualityUtility.LogMessage(LogLevel.Debug, "No items to upgrade");
                         JobFailReason.Is("UpgQlty.Messages.NoUpgradeItems".Translate(), null);
-                        return null;
+                        continue;
                     }
                     var possibleIngredients = GetAllPossibleIngredients(bill, pawn, bench);
                     UpgradeQualityUtility.LogMessage(LogLevel.Debug, "Found", possibleIngredients.Count.ToString(), "possible ingredients");
                     DefCountList AvailableCounts = new DefCountList();
-                    AvailableCounts.GenerateFrom(possibleIngredients);
                     HashSet<Thing> AssignedThings = new HashSet<Thing>();
                     foreach (Thing itemToUpgrade in list)
                     {
@@ -116,12 +122,11 @@ namespace UpgradeQuality.Items
                         else
                         {
                             UpgradeQualityUtility.LogMessage(LogLevel.Debug, "Not enough ingredients");
-                            latestReason = "MissingMaterials".Translate("Ingredients".Translate());
+                            JobFailReason.Is("MissingMaterials".Translate("Ingredients".Translate()));
                         }
                     }
                 }
             }
-            JobFailReason.Is(latestReason, null);
             return null;
         }
 
