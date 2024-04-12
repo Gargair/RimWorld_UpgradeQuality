@@ -86,7 +86,41 @@ namespace UpgradeQuality.Items
             }
             yield return gotoBillGiver;
             yield return MakeUnfinishedThingIfNeeded(cachedThingToUpgrade);
-            yield return Toils_Recipe.DoRecipeWork().FailOnDespawnedNullOrForbiddenPlacedThings(TargetIndex.A).FailOnCannotTouch(TargetIndex.A, PathEndMode.InteractionCell);
+            yield return Toils_Recipe.DoRecipeWork().WithProgressBar(TargetIndex.A, delegate
+            {
+                Pawn actor = toil.actor;
+                Job curJob = actor.CurJob;
+                Thing thing = curJob.GetTarget(TargetIndex.B).Thing;
+                float workLeft = ((JobDriver_DoBill)actor.jobs.curDriver).workLeft;
+                UnfinishedUpgrade unfinishedUpgrade = thing as UnfinishedUpgrade;
+                if (unfinishedUpgrade != null)
+                {
+                    var thingToUpgrade = unfinishedUpgrade.thingToUpgrade;
+                    float multiplier = 1f;
+#if V14
+                    var qualityComp = thingToUpgrade.TryGetComp<CompQuality>();
+                    if(qualityComp != null) {
+                        multiplier = UpgradeQualityUtility.GetMultiplier(qualityComp.Quality);
+                    }
+#else
+                    if (thingToUpgrade.TryGetComp<CompQuality>(out var qualityComp))
+                    {
+                        multiplier = UpgradeQualityUtility.GetMultiplier(qualityComp.Quality);
+                    }
+#endif
+                    float num = thingToUpgrade.def.GetStatValueAbstract(StatDefOf.WorkToMake, thingToUpgrade.Stuff) * multiplier;
+                    return 1f - workLeft / num;
+                }
+                else
+                {
+#if V14
+                    float num = curJob.bill.recipe.WorkAmountTotal(thing.Stuff);
+#else
+                    float num = curJob.bill.recipe.WorkAmountTotal(thing);
+#endif
+                    return 1f - workLeft / num;
+                }
+            }).FailOnDespawnedNullOrForbiddenPlacedThings(TargetIndex.A).FailOnCannotTouch(TargetIndex.A, PathEndMode.InteractionCell);
             yield return Toils_Recipe.CheckIfRecipeCanFinishNow();
             yield return FinishRecipeAndStartStoringProduct(TargetIndex.None);
             yield return Toils_Haul.CarryHauledThingToCell(TargetIndex.B);
@@ -136,10 +170,22 @@ namespace UpgradeQuality.Items
                 UpgradeQualityUtility.LogMessage("Created unfinished thing");
                 UpgradeQualityUtility.LogMessage(curJob.bill.GetType().FullName);
 #endif
+                float multiplier = 1f;
+#if V14
+                var qualityComp = thingToUpgrade.TryGetComp<CompQuality>();
+                if(qualityComp != null) {
+                    multiplier = UpgradeQualityUtility.GetMultiplier(qualityComp.Quality);
+                }
+#else
+                if (thingToUpgrade.TryGetComp<CompQuality>(out var qualityComp))
+                {
+                    multiplier = UpgradeQualityUtility.GetMultiplier(qualityComp.Quality);
+                }
+#endif
                 unfinishedThing.Creator = actor;
                 unfinishedThing.BoundBill = (Bill_ProductionWithUft)curJob.bill;
                 unfinishedThing.ingredients = list.Where(t => t != thingToUpgrade).ToList();
-                unfinishedThing.workLeft = curJob.bill.GetWorkAmount(unfinishedThing);
+                unfinishedThing.workLeft = thingToUpgrade.def.GetStatValueAbstract(StatDefOf.WorkToMake, thingToUpgrade.Stuff) * multiplier;
                 unfinishedThing.thingToUpgrade = thingToUpgrade;
 #if DEBUG && DEBUGITEMS
                 UpgradeQualityUtility.LogMessage("Spawning unfinished thing");

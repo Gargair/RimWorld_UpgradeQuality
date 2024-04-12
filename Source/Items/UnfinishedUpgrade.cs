@@ -6,6 +6,8 @@ namespace UpgradeQuality.Items
     {
         public Thing thingToUpgrade;
 
+        public override string DescriptionFlavor => thingToUpgrade.DescriptionFlavor;
+
         public override void ExposeData()
         {
             base.ExposeData();
