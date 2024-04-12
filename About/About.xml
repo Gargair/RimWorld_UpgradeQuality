@@ -3,7 +3,7 @@
   <name>Upgrade Quality</name>
   <packageId>rakros.upgradequality</packageId>
   <author>Rakros</author>
-  <modVersion>1.4.3</modVersion>
+  <modVersion>1.4.4</modVersion>
   <modIconPath IgnoreIfNoMatchingField="True">UpgradeQuality/Icon/ModIcon</modIconPath>
   <url>https://github.com/Gargair/RimWorld_UpgradeQuality</url>
   <supportedVersions>
