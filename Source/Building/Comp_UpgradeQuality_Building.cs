@@ -25,30 +25,7 @@ namespace UpgradeQuality.Building
         {
             if (!HasUpgradeDesignation)
             {
-#if DEBUG
-                if (Find.Selector.IsSelected(parent))
-                {
-                    UpgradeQualityUtility.LogMessage("Is Player Faction:", (parent.Faction == Faction.OfPlayer));
-                    if (parent.GetInnerIfMinified() is Verse.Building buildingTmp)
-                    {
-                        UpgradeQualityUtility.LogMessage("IsKeepOptionEnabled:", UpgradeQuality.Settings.IsKeepOptionEnabled);
-                        if (buildingTmp.TryGetQuality(out var qc))
-                        {
-                            UpgradeQualityUtility.LogMessage("Quality:", qc);
-                        }
-                        else
-                        {
-                            UpgradeQualityUtility.LogMessage("No Quality");
-                        }
-                        var designator = BuildCopyCommandUtility.FindAllowedDesignator(buildingTmp.def, true);
-                        UpgradeQualityUtility.LogMessage("Designatior:", designator);
-                    }
-                }
-#endif
-                if (parent.Faction == Faction.OfPlayer &&
-                    parent.GetInnerIfMinified() is Verse.Building building &&
-                    (UpgradeQuality.Settings.IsKeepOptionEnabled || building.TryGetQuality(out var quality) && quality < QualityCategory.Legendary) &&
-                    BuildCopyCommandUtility.FindAllowedDesignator(building.def, true) != null)
+                if (UpgradeQualityUtility.CanBeUpgraded(parent))
                 {
                     yield return CreateChangeBuildingGizmo();
                 }

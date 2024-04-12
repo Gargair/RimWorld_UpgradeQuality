@@ -1,4 +1,5 @@
 ﻿using HarmonyLib;
+using Mono.Unix.Native;
 using RimWorld;
 using System;
 using System.Collections.Generic;
@@ -165,5 +166,98 @@ namespace UpgradeQuality
                     return 0;
             }
         }
+
+        public static bool CanBeUpgraded(ThingWithComps thing)
+        {
+            thing = thing.GetInnerIfMinified() as ThingWithComps;
+            if (thing.Faction == Faction.OfPlayer && thing.TryGetQuality(out var quality))
+            {
+#if DEBUG
+                if (Find.Selector.IsSelected(thing))
+                {
+                    UpgradeQualityUtility.LogMessage("Is Player Faction with Quality");
+                    UpgradeQualityUtility.LogMessage("Is Quality:", quality);
+                    UpgradeQualityUtility.LogMessage("IsKeepOptionEnabled:", UpgradeQuality.Settings.IsKeepOptionEnabled);
+                }
+#endif
+                if (UpgradeQuality.Settings.IsKeepOptionEnabled || quality < QualityCategory.Legendary)
+                {
+                    if (thing is Verse.Building building)
+                    {
+#if DEBUG
+                        if (Find.Selector.IsSelected(thing))
+                        {
+                            UpgradeQualityUtility.LogMessage("Is building");
+                        }
+#endif
+                        if (BuildCopyCommandUtility.FindAllowedDesignator(building.def, true) != null)
+                        {
+#if DEBUG
+                            if (Find.Selector.IsSelected(thing))
+                            {
+                                UpgradeQualityUtility.LogMessage("Is building with allowed designator");
+                            }
+#endif
+                            return true;
+                        }
+
+                    }
+                    else
+                    {
+#if DEBUG
+                        if (Find.Selector.IsSelected(thing))
+                        {
+                            UpgradeQualityUtility.LogMessage("No building");
+                        }
+#endif
+                    }
+
+                    if (!RecipesForThingDef.ContainsKey(thing.def))
+                    {
+#if DEBUG
+                        if (Find.Selector.IsSelected(thing))
+                        {
+                            UpgradeQualityUtility.LogMessage("building recipe cache");
+                        }
+#endif
+                        List<RecipeDef> recipes = new List<RecipeDef>();
+                        List<RecipeDef> allRecipes = DefDatabase<RecipeDef>.AllDefsListForReading;
+                        for (int j = 0; j < allRecipes.Count; j++)
+                        {
+                            if (allRecipes[j].ProducedThingDef == thing.def)
+                            {
+                                recipes.Add(allRecipes[j]);
+                            }
+                        }
+                        RecipesForThingDef.Add(thing.def, recipes);
+                    }
+
+                    var thingRecipes = RecipesForThingDef[thing.def];
+
+#if DEBUG
+                    if (Find.Selector.IsSelected(thing) && thingRecipes.Count == 0)
+                    {
+                        UpgradeQualityUtility.LogMessage("No recipes");
+                    }
+#endif
+                    foreach (var recipe in thingRecipes)
+                    {
+                        if (recipe.AvailableNow)
+                        {
+#if DEBUG
+                            if (Find.Selector.IsSelected(thing))
+                            {
+                                UpgradeQualityUtility.LogMessage("Has recipe available now");
+                            }
+#endif
+                            return true;
+                        }
+                    }
+                }
+            }
+            return false;
+        }
+
+        private static readonly Dictionary<ThingDef, List<RecipeDef>> RecipesForThingDef = new Dictionary<ThingDef, List<RecipeDef>>();
     }
 }
