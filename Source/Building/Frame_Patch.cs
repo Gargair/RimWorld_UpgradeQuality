@@ -221,4 +221,33 @@ namespace UpgradeQuality.Building
             }
         }
     }
+
+#if PatchCategory
+    [HarmonyPatchCategory("UpgradeBuildings")]
+#endif
+    [HarmonyPatch(typeof(Frame), nameof(Frame.WorkToBuild), MethodType.Getter)]
+    internal static class Frame_WorkToBuild
+    {
+        public static void Postfix(Frame __instance, ref float __result)
+        {
+            if (FrameUtility.IsUpgradeBuildingFrame(__instance, out var frame))
+            {
+                if (BuildCopyCommandUtility.FindAllowedDesignator(__instance.def.entityDefToBuild, true) == null)
+                {
+                    __result = __instance.def.entityDefToBuild.GetStatValueAbstract(StatDefOf.WorkToMake, __instance.Stuff);
+                }
+#if V14
+                var qualityComp = frame.thingToChange.TryGetComp<CompQuality>();
+                if(qualityComp != null) {
+                    __result *= UpgradeQualityUtility.GetMultiplier(qualityComp.Quality);
+                }
+#else
+                if (frame.thingToChange.TryGetComp<CompQuality>(out var qualityComp))
+                {
+                    __result *= UpgradeQualityUtility.GetMultiplier(qualityComp.Quality);
+                }
+#endif
+            }
+        }
+    }
 }

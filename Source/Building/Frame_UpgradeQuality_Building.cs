@@ -29,7 +29,6 @@ namespace UpgradeQuality.Building
             }
         }
 
-
         private Comp_UpgradeQuality_Building Comp => thingToChange?.GetComp<Comp_UpgradeQuality_Building>();
 
         public override void Notify_KilledLeavingsLeft(List<Thing> leavings)
