@@ -153,6 +153,7 @@ namespace UpgradeQuality.Items
                     return;
                 }
                 List<Thing> list = CalculateIngredients(curJob, actor);
+                bool hasSomeThingSelected = Find.Selector.IsSelected(thingToUpgrade);
 #if DEBUG && DEBUGITEMS
                 UpgradeQualityUtility.LogMessage("Calculated ingredients");
 #endif
@@ -163,6 +164,7 @@ namespace UpgradeQuality.Items
 #if DEBUG && DEBUGITEMS
                     UpgradeQualityUtility.LogMessage("Despawning", thing2.GetUniqueLoadID());
 #endif
+                    hasSomeThingSelected = hasSomeThingSelected || Find.Selector.IsSelected(thing2);
                     thing2.DeSpawnOrDeselect(DestroyMode.Vanish);
                 }
                 UnfinishedUpgrade unfinishedThing = (UnfinishedUpgrade)ThingMaker.MakeThing(curJob.RecipeDef.unfinishedThingDef);
@@ -196,6 +198,10 @@ namespace UpgradeQuality.Items
 #endif
                 curJob.SetTarget(TargetIndex.B, unfinishedThing);
                 actor.Reserve(unfinishedThing, curJob, 1, -1, null, true);
+                if (hasSomeThingSelected)
+                {
+                    Find.Selector.Select(unfinishedThing);
+                }
             };
             return toil;
         }
@@ -263,8 +269,12 @@ namespace UpgradeQuality.Items
                 Job curJob = actor.jobs.curJob;
                 UnfinishedUpgrade unfinishedThing = curJob.GetTarget(TargetIndex.B).Thing as UnfinishedUpgrade;
                 var thingToUpgrade = unfinishedThing.thingToUpgrade;
+                bool hasUnfinishedThingSelected = Find.Selector.IsSelected(unfinishedThing);
                 List<Thing> ingredients = CalculateIngredients(curJob, actor);
 
+#if DEBUG && DEBUGITEMS
+                UpgradeQualityUtility.LogMessage("FinishRecipeAndStartStoringProduct", "hasUnfinishedThingSelected", hasUnfinishedThingSelected);
+#endif
                 curJob.bill.Notify_IterationCompleted(actor, ingredients);
 
                 var qComp = thingToUpgrade.TryGetComp<CompQuality>();
@@ -278,64 +288,48 @@ namespace UpgradeQuality.Items
                     }
                 }
 
-                var products = new List<Thing>
-                {
-                    thingToUpgrade
-                };
-                RecordsUtility.Notify_BillDone(actor, products);
                 if (curJob == null || curJob.bill == null)
                 {
-                    for (int i = 0; i < products.Count; i++)
+                    if (!GenPlace.TryPlaceThing(thingToUpgrade, actor.Position, actor.Map, ThingPlaceMode.Near, null, null, default(Rot4)))
                     {
-                        if (!GenPlace.TryPlaceThing(products[i], actor.Position, actor.Map, ThingPlaceMode.Near, null, null, default(Rot4)))
-                        {
-                            UpgradeQualityUtility.LogError(actor, "could not drop recipe product", products[i], "near", actor.Position);
-                        }
+                        UpgradeQualityUtility.LogError(actor, "could not drop recipe product", thingToUpgrade, "near", actor.Position);
                     }
-                    return;
-                }
-                if (products.Any<Thing>())
-                {
-                    Find.QuestManager.Notify_ThingsProduced(actor, products);
-                }
-                if (products.Count == 0)
-                {
-                    actor.jobs.EndCurrentJob(JobCondition.Succeeded, true, true);
+                    if (hasUnfinishedThingSelected)
+                    {
+#if DEBUG && DEBUGITEMS
+                        UpgradeQualityUtility.LogMessage("FinishRecipeAndStartStoringProduct", "selecting1");
+#endif
+                        Find.Selector.Select(thingToUpgrade);
+                    }
                     return;
                 }
                 if (curJob.bill.GetStoreMode() == BillStoreModeDefOf.DropOnFloor)
                 {
-                    for (int j = 0; j < products.Count; j++)
+                    if (!GenPlace.TryPlaceThing(thingToUpgrade, actor.Position, actor.Map, ThingPlaceMode.Near, null, null, default(Rot4)))
                     {
-                        if (!GenPlace.TryPlaceThing(products[j], actor.Position, actor.Map, ThingPlaceMode.Near, null, null, default(Rot4)))
-                        {
-                            UpgradeQualityUtility.LogError(actor, "could not drop recipe product", products[j], "near", actor.Position);
-                        }
+                        UpgradeQualityUtility.LogError(actor, "could not drop recipe product", thingToUpgrade, "near", actor.Position);
+                    }
+                    if (hasUnfinishedThingSelected)
+                    {
+#if DEBUG && DEBUGITEMS
+                        UpgradeQualityUtility.LogMessage("FinishRecipeAndStartStoringProduct", "selecting2");
+#endif
+                        Find.Selector.Select(thingToUpgrade);
                     }
                     actor.jobs.EndCurrentJob(JobCondition.Succeeded, true, true);
                     return;
                 }
-                if (products.Count > 1)
-                {
-                    for (int k = 1; k < products.Count; k++)
-                    {
-                        if (!GenPlace.TryPlaceThing(products[k], actor.Position, actor.Map, ThingPlaceMode.Near, null, null, default(Rot4)))
-                        {
-                            UpgradeQualityUtility.LogError(actor, "could not drop recipe product", products[k], "near", actor.Position);
-                        }
-                    }
-                }
                 IntVec3 invalid = IntVec3.Invalid;
                 if (curJob.bill.GetStoreMode() == BillStoreModeDefOf.BestStockpile)
                 {
-                    StoreUtility.TryFindBestBetterStoreCellFor(products[0], actor, actor.Map, StoragePriority.Unstored, actor.Faction, out invalid, true);
+                    StoreUtility.TryFindBestBetterStoreCellFor(thingToUpgrade, actor, actor.Map, StoragePriority.Unstored, actor.Faction, out invalid, true);
                 }
                 else if (curJob.bill.GetStoreMode() == BillStoreModeDefOf.SpecificStockpile)
                 {
 #if V14
-                    StoreUtility.TryFindBestBetterStoreCellForIn(products[0], actor, actor.Map, StoragePriority.Unstored, actor.Faction, curJob.bill.GetStoreZone().slotGroup, out invalid, true);
+                    StoreUtility.TryFindBestBetterStoreCellForIn(thingToUpgrade, actor, actor.Map, StoragePriority.Unstored, actor.Faction, curJob.bill.GetStoreZone().slotGroup, out invalid, true);
 #elif V15
-                    StoreUtility.TryFindBestBetterStoreCellForIn(products[0], actor, actor.Map, StoragePriority.Unstored, actor.Faction, curJob.bill.GetSlotGroup(), out invalid, true);
+                    StoreUtility.TryFindBestBetterStoreCellForIn(thingToUpgrade, actor, actor.Map, StoragePriority.Unstored, actor.Faction, curJob.bill.GetSlotGroup(), out invalid, true);
 #endif
                 }
                 else
@@ -344,18 +338,32 @@ namespace UpgradeQuality.Items
                 }
                 if (invalid.IsValid)
                 {
-                    actor.carryTracker.TryStartCarry(products[0]);
+                    actor.carryTracker.TryStartCarry(thingToUpgrade);
                     curJob.targetB = invalid;
                     if (productIndex != TargetIndex.None)
                     {
-                        curJob.SetTarget(productIndex, products[0]);
+                        curJob.SetTarget(productIndex, thingToUpgrade);
                     }
                     curJob.count = 99999;
+                    if (hasUnfinishedThingSelected)
+                    {
+#if DEBUG && DEBUGITEMS
+                        UpgradeQualityUtility.LogMessage("FinishRecipeAndStartStoringProduct", "selecting3");
+#endif
+                        Find.Selector.Select(thingToUpgrade);
+                    }
                     return;
                 }
-                if (!GenPlace.TryPlaceThing(products[0], actor.Position, actor.Map, ThingPlaceMode.Near, null, null, default(Rot4)))
+                if (!GenPlace.TryPlaceThing(thingToUpgrade, actor.Position, actor.Map, ThingPlaceMode.Near, null, null, default(Rot4)))
                 {
-                    UpgradeQualityUtility.LogError(actor, "could not drop product", products[0], "near", actor.Position);
+                    UpgradeQualityUtility.LogError(actor, "could not drop product", thingToUpgrade, "near", actor.Position);
+                }
+                if (hasUnfinishedThingSelected)
+                {
+#if DEBUG && DEBUGITEMS
+                    UpgradeQualityUtility.LogMessage("FinishRecipeAndStartStoringProduct", "selecting4");
+#endif
+                    Find.Selector.Select(thingToUpgrade);
                 }
                 actor.jobs.EndCurrentJob(JobCondition.Succeeded, true, true);
             };

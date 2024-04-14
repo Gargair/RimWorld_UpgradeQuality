@@ -5,7 +5,6 @@
   <UpgQlty.Labels.UpgradeToKeep>Upgrade to {0} and keep it</UpgQlty.Labels.UpgradeToKeep>
   <UpgQlty.Labels.UpgradingTo>Upgrading to {0}</UpgQlty.Labels.UpgradingTo>
   <UpgQlty.Labels.UpgradeBuilding>Upgrade quality of building</UpgQlty.Labels.UpgradeBuilding>
-  <UpgQlty.Labels.UpgradingBuilding>Upgrading</UpgQlty.Labels.UpgradingBuilding>
   <UpgQlty.Labels.Settings.MaterialMultiplier>Material multiplier</UpgQlty.Labels.Settings.MaterialMultiplier>
   <UpgQlty.Labels.Settings.MaterialsNeededFor>from {0} to {1}: {2}</UpgQlty.Labels.Settings.MaterialsNeededFor>
   <UpgQlty.Labels.Settings.IsKeepOptionEnabled>Enable Keep Quality option</UpgQlty.Labels.Settings.IsKeepOptionEnabled>

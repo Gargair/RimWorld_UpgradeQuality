@@ -64,7 +64,7 @@ namespace UpgradeQuality.Building
         {
             ThingDef thingDef = BaseFrameDef();
             thingDef.defName = def.defName + "_UpgradeBuildingQuality";
-            thingDef.label = def.label + "UpgQlty.Labels.UpgradingBuilding".Translate();
+            thingDef.label = def.label;
             thingDef.size = def.size;
             thingDef.SetStatBaseValue(StatDefOf.MaxHitPoints, (float)def.BaseMaxHitPoints * 0.25f);
             thingDef.SetStatBaseValue(StatDefOf.Beauty, -8f);
