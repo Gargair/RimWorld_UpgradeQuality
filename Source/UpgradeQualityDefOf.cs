@@ -3,30 +3,17 @@ using Verse;
 
 namespace UpgradeQuality
 {
+    [DefOf]
     public static class UpgradeQualityDefOf
     {
-
-        [DefOf]
-        public static class Designations
+        static UpgradeQualityDefOf()
         {
-            static Designations()
-            {
-                DefOfHelper.EnsureInitializedInCtor(typeof(Designations));
-            }
-
-            public static DesignationDef IncreaseQuality_Building;
-            public static DesignationDef IncreaseQuality_Items;
+            DefOfHelper.EnsureInitializedInCtor(typeof(UpgradeQualityDefOf));
         }
 
-        [DefOf]
-        public static class Jobs
-        {
-            static Jobs()
-            {
-                DefOfHelper.EnsureInitializedInCtor(typeof(Jobs));
-            }
+        public static DesignationDef IncreaseQuality_Building;
 
-            public static JobDef IncreaseQuality_Job;
-        }
+        public static JobDef IncreaseQuality_Job;
+
     }
 }

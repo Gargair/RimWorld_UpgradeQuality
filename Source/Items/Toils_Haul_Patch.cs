@@ -36,7 +36,7 @@ namespace UpgradeQuality.Items
                 yield return oldInstructions[startBatchIndex].Clone();
                 yield return oldInstructions[startBatchIndex + 1].Clone();
                 yield return oldInstructions[startBatchIndex + 2].Clone();
-                yield return CodeInstruction.LoadField(typeof(UpgradeQualityDefOf.Jobs), nameof(UpgradeQualityDefOf.Jobs.IncreaseQuality_Job));
+                yield return CodeInstruction.LoadField(typeof(UpgradeQualityDefOf), nameof(UpgradeQualityDefOf.IncreaseQuality_Job));
                 // My JobDefOf
                 yield return oldInstructions[startBatchIndex + 4];
                 foreach (var instr in oldInstructions.GetRange(endBatchIndex + 1, oldInstructions.Count - endBatchIndex - 1))

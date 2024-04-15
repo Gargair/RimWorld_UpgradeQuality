@@ -42,10 +42,6 @@ namespace UpgradeQuality.Building
             for (int i = activeQualityComps.Count - 1; i >= 0; i--)
             {
                 var comp = activeQualityComps[i];
-                if (comp == null || !comp.IsStillActive())
-                {
-                    activeQualityComps.RemoveAt(i);
-                }
                 if (comp.parent.IsHashIntervalTick(600))
                 {
                     comp.CheckAndDoUpgrade();
@@ -59,6 +55,11 @@ namespace UpgradeQuality.Building
             {
                 this.activeQualityComps.Add(comp);
             }
+        }
+
+        public void RemoveComponent(Comp_UpgradeQuality_Building comp)
+        {
+            this.activeQualityComps.Remove(comp);
         }
     }
 }

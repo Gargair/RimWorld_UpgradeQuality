@@ -14,9 +14,22 @@ namespace UpgradeQuality.Building
         public Frame_UpgradeQuality_Building placedFrame;
 
         private DesignationManager DesignationManager => parent?.Map?.designationManager;
-        private bool HasUpgradeDesignation => DesignationManager?.DesignationOn(parent, UpgradeQualityDefOf.Designations.IncreaseQuality_Building) != null;
+        private bool HasUpgradeDesignation => UpgradeDesignation != null;
+        private Designation UpgradeDesignation => DesignationManager?.DesignationOn(parent, UpgradeQualityDefOf.IncreaseQuality_Building);
         private bool needDesignationAfterSpawn = false;
-        private CompQuality CompQuality => parent?.GetComp<CompQuality>();
+        public bool SkipRemoveDesignation = false;
+        private CompQuality _compQuality;
+        private CompQuality CompQuality
+        {
+            get
+            {
+                if (_compQuality == null)
+                {
+                    _compQuality = parent?.GetComp<CompQuality>();
+                }
+                return _compQuality;
+            }
+        }
         private GameComponent_ActiveQualityCompTracker tracker = Current.Game.GetComponent<GameComponent_ActiveQualityCompTracker>();
 
         public Comp_UpgradeQuality_Building() { }
@@ -54,10 +67,10 @@ namespace UpgradeQuality.Building
                     needDesignationAfterSpawn = true;
                     return;
                 }
-                var designation = DesignationManager.DesignationOn(parent, UpgradeQualityDefOf.Designations.IncreaseQuality_Building);
+                var designation = UpgradeDesignation;
                 if (designation == null)
                 {
-                    DesignationManager.AddDesignation(new Designation(parent, UpgradeQualityDefOf.Designations.IncreaseQuality_Building));
+                    DesignationManager.AddDesignation(new Designation(parent, UpgradeQualityDefOf.IncreaseQuality_Building));
                 }
                 tracker?.AddComponent(this);
             }
@@ -106,14 +119,13 @@ namespace UpgradeQuality.Building
 #endif
             desiredQuality = QualityCategory.Awful;
             keepQuality = false;
-            if (DesignationManager != null)
+
+            if (!SkipRemoveDesignation)
             {
-                var des = DesignationManager.DesignationOn(parent, UpgradeQualityDefOf.Designations.IncreaseQuality_Building);
-                if (des != null)
-                {
-                    DesignationManager.RemoveDesignation(des);
-                };
+                DesignationManager?.TryRemoveDesignationOn(parent, UpgradeQualityDefOf.IncreaseQuality_Building);
             }
+            tracker?.RemoveComponent(this);
+
             if (placedFrame != null)
             {
 #if DEBUG && DEBUGBUILDINGS
@@ -139,7 +151,7 @@ namespace UpgradeQuality.Building
                 if (DesignationManager != null)
                 {
                     needDesignationAfterSpawn = false;
-                    DesignationManager.AddDesignation(new Designation(parent, UpgradeQualityDefOf.Designations.IncreaseQuality_Building));
+                    DesignationManager.AddDesignation(new Designation(parent, UpgradeQualityDefOf.IncreaseQuality_Building));
                 }
             }
         }
@@ -147,10 +159,10 @@ namespace UpgradeQuality.Building
         public override void PostExposeData()
         {
             base.PostExposeData();
-            Scribe_Values.Look<QualityCategory>(ref desiredQuality, "UpgQlty.desiredQuality", QualityCategory.Awful, false);
+            Scribe_Values.Look(ref desiredQuality, "UpgQlty.desiredQuality", QualityCategory.Awful, false);
             if (Scribe.mode == LoadSaveMode.Saving && placedFrame != null)
             {
-                Scribe_References.Look<Frame_UpgradeQuality_Building>(ref placedFrame, "UpgQlty.placedFrame");
+                Scribe_References.Look(ref placedFrame, "UpgQlty.placedFrame");
             }
             else if (Scribe.mode != LoadSaveMode.Saving)
             {

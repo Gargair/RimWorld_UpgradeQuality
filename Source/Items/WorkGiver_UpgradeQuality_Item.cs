@@ -273,7 +273,7 @@ namespace UpgradeQuality.Items
 #if DEBUG && DEBUGITEMS
             UpgradeQualityUtility.LogMessage("Starting new upgrade job", bill.recipe.defName, bill.GetType().FullName, itemToUpgrade.def.defName, ingredients);
 #endif
-            Job job = new Job(UpgradeQualityDefOf.Jobs.IncreaseQuality_Job, (Thing)workbench)
+            Job job = new Job(UpgradeQualityDefOf.IncreaseQuality_Job, (Thing)workbench)
             {
                 haulMode = HaulMode.ToCellNonStorage,
                 bill = bill,

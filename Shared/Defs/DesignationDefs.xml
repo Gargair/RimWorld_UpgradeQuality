@@ -4,10 +4,6 @@
     <defName>IncreaseQuality_Building</defName>
     <texturePath>UpgradeQuality/UI/DesQualityUp</texturePath>
     <targetType>Thing</targetType>
-  </DesignationDef>
-  <DesignationDef>
-    <defName>IncreaseQuality_Items</defName>
-    <texturePath>UpgradeQuality/UI/DesQualityUp</texturePath>
-    <targetType>Thing</targetType>
+    <removeIfBuildingDespawned>true</removeIfBuildingDespawned>
   </DesignationDef>
 </Defs>
