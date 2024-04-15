@@ -147,9 +147,16 @@ namespace UpgradeQuality.Building
         public override void PostExposeData()
         {
             base.PostExposeData();
-            Scribe_Values.Look<QualityCategory>(ref desiredQuality, "UpgQlty.desiredQuality");
-            Scribe_References.Look<Frame_UpgradeQuality_Building>(ref placedFrame, "UpgQlty.placedFrame");
-            Scribe_Values.Look(ref keepQuality, "UpgQlty.keepQuality");
+            Scribe_Values.Look<QualityCategory>(ref desiredQuality, "UpgQlty.desiredQuality", QualityCategory.Awful, false);
+            if (Scribe.mode == LoadSaveMode.Saving && placedFrame != null)
+            {
+                Scribe_References.Look<Frame_UpgradeQuality_Building>(ref placedFrame, "UpgQlty.placedFrame");
+            }
+            else if (Scribe.mode != LoadSaveMode.Saving)
+            {
+                Scribe_References.Look(ref placedFrame, "UpgQlty.placedFrame");
+            }
+            Scribe_Values.Look(ref keepQuality, "UpgQlty.keepQuality", false, false);
         }
 
         public override string CompInspectStringExtra()

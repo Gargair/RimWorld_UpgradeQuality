@@ -68,7 +68,7 @@ namespace UpgradeQuality.Building
         {
             base.ExposeData();
             Scribe_References.Look(ref thingToChange, "UpgQlty.thingToChange");
-            Scribe_Values.Look(ref generatedForQuality, "UpgQlty.generatedForQuality", QualityCategory.Awful, true);
+            Scribe_Values.Look(ref generatedForQuality, "UpgQlty.generatedForQuality", QualityCategory.Awful, false);
         }
 
         public void CustomCompleteConstruction(Pawn worker)
