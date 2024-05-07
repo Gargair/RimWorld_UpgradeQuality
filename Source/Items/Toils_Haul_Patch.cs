@@ -1,58 +1,93 @@
 ﻿using HarmonyLib;
 using RimWorld;
 using System.Collections.Generic;
-using System.Linq;
+using System.Reflection;
+using System.Reflection.Emit;
+using Verse.AI;
 
 namespace UpgradeQuality.Items
 {
 #if V15
     [HarmonyPatchCategory("UpgradeItems")]
-    [HarmonyPatch("Verse.AI.Toils_Haul+<>c__DisplayClass8_0", "<PlaceHauledThingInCell>b__0")]
+    [HarmonyPatch]
 #endif
     public class Toils_Haul_Patch_PlacedThings
     {
-        public static IEnumerable<CodeInstruction> Transpiler(IEnumerable<CodeInstruction> instructions)
+        [HarmonyTargetMethod]
+        public static MethodInfo GetMethod()
         {
-            var get_DoBill = AccessTools.Field(typeof(JobDefOf), nameof(JobDefOf.DoBill));
-            var oldInstructions = instructions.ToList();
-            var JobDefDoBillIndex = -1;
-            for (int i = 0; i < oldInstructions.Count; i++)
+#if DEBUG && DEBUGITEMS
+            UpgradeQualityUtility.LogMessage("Start finding method to transpile");
+#endif
+#if V15
+            foreach (var t in AccessTools.InnerTypes(typeof(Toils_Haul)))
+#else
+            foreach(var t in typeof(Toils_Haul).GetNestedTypes(AccessTools.all))
+#endif
             {
-                var instr = oldInstructions[i];
-                if (instr.LoadsField(get_DoBill))
+#if DEBUG && DEBUGITEMS
+                UpgradeQualityUtility.LogMessage(t.FullName);
+#endif
+                foreach (var m in AccessTools.GetDeclaredMethods(t))
                 {
-                    JobDefDoBillIndex = i;
-                    break;
+#if DEBUG && DEBUGITEMS
+                    UpgradeQualityUtility.LogMessage($"\t{m.Name}");
+#endif
+                    if (m.Name.Contains("PlaceHauledThingInCell"))
+                    {
+                        return m;
+                    }
                 }
             }
-            if (JobDefDoBillIndex >= 0)
+            return null;
+        }
+
+        [HarmonyTranspiler]
+        public static IEnumerable<CodeInstruction> Transpiler(IEnumerable<CodeInstruction> instructions, MethodBase original)
+        {
+            var holdingType = original.GetMethodBody().LocalVariables[0].LocalType;
+            var matcher = new CodeMatcher(instructions);
+            var get_DoBill = AccessTools.Field(typeof(JobDefOf), nameof(JobDefOf.DoBill));
+            var get_CurJob = AccessTools.Field(holdingType, "curJob");
+            var get_Def = AccessTools.Field(typeof(Job), nameof(Job.def));
+
+            var toMatch = new CodeMatch[]
             {
-                var startBatchIndex = JobDefDoBillIndex - 3;
-                var endBatchIndex = JobDefDoBillIndex + 1;
-                foreach (var instr in oldInstructions.GetRange(0, endBatchIndex + 1))
+                new CodeMatch(OpCodes.Ldloc_0),
+                new CodeMatch(OpCodes.Ldfld, get_CurJob),
+                new CodeMatch(OpCodes.Ldfld, get_Def),
+                new CodeMatch(OpCodes.Ldsfld, get_DoBill),
+                new CodeMatch(OpCodes.Beq_S)
+            };
+
+            matcher.MatchStartForward(toMatch);
+
+            if (matcher.IsValid)
+            {
+                var toCopy = matcher.InstructionsWithOffsets(0, toMatch.Length - 1);
+#if DEBUG && DEBUGITEMS
+                UpgradeQualityUtility.LogMessage("CIL to Copy");
+                foreach (var c in toCopy)
                 {
-                    yield return instr;
+                    UpgradeQualityUtility.LogMessage($"\t{c.opcode}\t{c.operand}");
                 }
-                yield return oldInstructions[startBatchIndex].Clone();
-                yield return oldInstructions[startBatchIndex + 1].Clone();
-                yield return oldInstructions[startBatchIndex + 2].Clone();
-                yield return CodeInstruction.LoadField(typeof(UpgradeQualityDefOf), nameof(UpgradeQualityDefOf.IncreaseQuality_Job));
-                // My JobDefOf
-                yield return oldInstructions[startBatchIndex + 4];
-                foreach (var instr in oldInstructions.GetRange(endBatchIndex + 1, oldInstructions.Count - endBatchIndex - 1))
-                {
-                    yield return instr;
-                }
-                yield break;
+#endif
+                matcher.Advance(toMatch.Length);
+#if DEBUG && DEBUGITEMS
+                UpgradeQualityUtility.LogMessage("Inserting copy before");
+                UpgradeQualityUtility.LogMessage($"\t{matcher.Instruction.opcode}\t{matcher.Instruction.operand}");
+#endif
+                matcher.Insert(toCopy);
+                matcher.Advance(toMatch.Length - 2);
+                matcher.SetInstruction(CodeInstruction.LoadField(typeof(UpgradeQualityDefOf), nameof(UpgradeQualityDefOf.IncreaseQuality_Job)));
+                return matcher.InstructionEnumeration();
             }
             else
             {
-                UpgradeQualityUtility.LogError("Failed to get JobDefDoBillIndex");
-                foreach (var instr in instructions)
-                {
-                    yield return instr;
-                }
+                UpgradeQualityUtility.LogError("Failed to get anchor for Toils_Haul");
+                return instructions;
             }
+
         }
     }
 }
