@@ -8,12 +8,6 @@ namespace UpgradeQuality.Building
 {
     public class Command_UpgradeQuality_Building : Command_Action
     {
-        static Command_UpgradeQuality_Building()
-        {
-            RenderQualityCategories = QualityUtility.AllQualityCategories.ListFullCopy();
-            RenderQualityCategories.Reverse();
-        }
-
         public Command_UpgradeQuality_Building()
         {
             icon = ContentFinder<Texture2D>.Get("UpgradeQuality/UI/QualityUp");
@@ -52,6 +46,16 @@ namespace UpgradeQuality.Building
                     lowestQcFound = itemQc;
                 }
             }
+            List<QualityCategory> RenderQualityCategories = new List<QualityCategory>();
+            var allQualities = QualityUtility.AllQualityCategories.ListFullCopy();
+            foreach (var q in allQualities)
+            {
+                if (q <= UpgradeQuality.Settings.MaxQuality)
+                {
+                    RenderQualityCategories.Add(q);
+                }
+            }
+            RenderQualityCategories.Reverse();
             foreach (var cat in RenderQualityCategories)
             {
                 if (cat > lowestQcFound)
@@ -64,7 +68,5 @@ namespace UpgradeQuality.Building
                 }
             }
         }
-
-        private static readonly List<QualityCategory> RenderQualityCategories;
     }
 }

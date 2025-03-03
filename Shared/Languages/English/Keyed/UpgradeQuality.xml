@@ -8,6 +8,8 @@
   <UpgQlty.Labels.Settings.MaterialMultiplier>Material multiplier</UpgQlty.Labels.Settings.MaterialMultiplier>
   <UpgQlty.Labels.Settings.MaterialsNeededFor>from {0} to {1}: {2}</UpgQlty.Labels.Settings.MaterialsNeededFor>
   <UpgQlty.Labels.Settings.IsKeepOptionEnabled>Enable Keep Quality option</UpgQlty.Labels.Settings.IsKeepOptionEnabled>
+  <UpgQlty.Labels.Settings.MaxQuality>Max quality</UpgQlty.Labels.Settings.MaxQuality>
+  <UpgQlty.Labels.Settings.LimitItemQualityToWorkbench>Limit maximum item quality to workbench quality</UpgQlty.Labels.Settings.LimitItemQualityToWorkbench>
 
   <UpgQlty.Messages.NoUpgradeItems>No items to upgrade found.</UpgQlty.Messages.NoUpgradeItems>
 
@@ -16,4 +18,10 @@
     relation to the item's original resource cost.\n\nFor example, if an item took 100 wood to craft
     and this value was .1, then 10 wood would be used for the quality increase task at the item's
     current quality level.</UpgQlty.Tooltips.Settings.MaterialsNeededTooltip>
+  <UpgQlty.Tooltips.Settings.IsKeepOptionEnabled>Only needed if you have a mod that reduces quality.\n
+    Enables a check on all buildings where a quality should be kept. Of the building has less than the desired quality,\n
+     an upgrade job will be automatically placed.</UpgQlty.Tooltips.Settings.IsKeepOptionEnabled>
+  <UpgQlty.Tooltips.Settings.MaxQuality>The maximum quality that should be achievable with this mod.</UpgQlty.Tooltips.Settings.MaxQuality>
+  <UpgQlty.Tooltips.Settings.LimitItemQualityToWorkbench>This setting enabled limits the maximum quality of the item being upgraded to the quality of the workbench\n
+    If the workbench has no quality (because some mod removed it) this setting has no purpose.</UpgQlty.Tooltips.Settings.LimitItemQualityToWorkbench>
 </LanguageData>

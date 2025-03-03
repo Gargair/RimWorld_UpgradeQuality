@@ -90,6 +90,11 @@ namespace UpgradeQuality.Items
                 return null;
             }
             JobFailReason.Is("UpgQlty.Messages.NoUpgradeItems".Translate(), null);
+            QualityCategory maxQualityForUpgradeItemBeforeUpgrade = UpgradeQuality.Settings.MaxQuality;
+            if (UpgradeQuality.Settings.LimitItemQualityToWorkbench && bench.TryGetQuality(out QualityCategory benchQuality))
+            {
+                maxQualityForUpgradeItemBeforeUpgrade = (QualityCategory)Math.Min((byte)maxQualityForUpgradeItemBeforeUpgrade, (byte)benchQuality);
+            }
             foreach (Bill bill in billGiver.BillStack)
             {
                 bool shouldSkip = (bill.recipe.requiredGiverWorkType != null && bill.recipe.requiredGiverWorkType != this.def.workType) || (Find.TickManager.TicksGame < bill.nextTickToSearchForIngredients && FloatMenuMakerMap.makingFor != pawn) || !bill.ShouldDoNow() || !bill.PawnAllowedToStartAnew(pawn);
@@ -111,7 +116,8 @@ namespace UpgradeQuality.Items
 #endif
                         return StartNewUpgradeJob(bill, billGiver, unfinishedThing, new List<ThingCount>());
                     }
-                    List<Thing> list = FindItemsToUpgrade(pawn, bench, bill);
+
+                    List<Thing> list = FindItemsToUpgrade(pawn, bench, bill, maxQualityForUpgradeItemBeforeUpgrade);
                     if (list.NullOrEmpty())
                     {
 #if DEBUG && DEBUGITEMS
@@ -166,14 +172,14 @@ namespace UpgradeQuality.Items
             return GenClosest.ClosestThingReachable(bench.Position, bench.Map, ThingRequest.ForGroup(ThingRequestGroup.HaulableEver), PathEndMode.InteractionCell, TraverseParms.For(pawn, pawn.NormalMaxDanger()), bill.ingredientSearchRadius, validator);
         }
 
-        private static List<Thing> FindItemsToUpgrade(Pawn pawn, Thing bench, Bill bill)
+        private static List<Thing> FindItemsToUpgrade(Pawn pawn, Thing bench, Bill bill, QualityCategory maxQuality)
         {
             Region validRegionAt = pawn.Map.regionGrid.GetValidRegionAt(GetBillGiverRootCell(bench, pawn));
             if (validRegionAt == null)
             {
                 return new List<Thing>();
             }
-            var proc = new RegionProcessor_ThingToUpgrade(pawn, bill.ingredientSearchRadius, GetBillGiverRootCell(bench, pawn), bill.ingredientFilter, true);
+            var proc = new RegionProcessor_ThingToUpgrade(pawn, bill.ingredientSearchRadius, GetBillGiverRootCell(bench, pawn), bill.ingredientFilter, maxQuality, false);
             RegionTraverser.BreadthFirstTraverse(validRegionAt, proc, 99999, RegionType.Set_Passable);
             proc.Sort();
             return proc.ValidItems;
@@ -186,7 +192,7 @@ namespace UpgradeQuality.Items
             {
                 return new List<Thing>();
             }
-            var proc = new RegionProcessor_ThingToUpgrade(pawn, bill.ingredientSearchRadius, GetBillGiverRootCell(billGiver, pawn), null, false);
+            var proc = new RegionProcessor_ThingToUpgrade(pawn, bill.ingredientSearchRadius, GetBillGiverRootCell(billGiver, pawn), null, QualityCategory.Legendary, true);
             RegionTraverser.BreadthFirstTraverse(validRegionAt, proc, 99999, RegionType.Set_Passable);
             proc.Sort();
             return proc.ValidItems;

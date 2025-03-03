@@ -1,5 +1,7 @@
 ﻿using RimWorld;
+using System.Collections.Generic;
 using UnityEngine;
+using UpgradeQuality.Building;
 using Verse;
 
 namespace UpgradeQuality
@@ -12,7 +14,9 @@ namespace UpgradeQuality
         public float Factor_Good_Excellent = 4;
         public float Factor_Excellent_Masterwork = 5;
         public float Factor_Masterwork_Legendary = 6;
+        public QualityCategory MaxQuality = QualityCategory.Legendary;
         public bool IsKeepOptionEnabled = false;
+        public bool LimitItemQualityToWorkbench = true;
         private string AwfulBuffer = null;
         private string PoorBuffer = null;
         private string NormalBuffer = null;
@@ -32,6 +36,8 @@ namespace UpgradeQuality
             Scribe_Values.Look(ref Factor_Excellent_Masterwork, "Factor_Excellent_Masterwork", 5);
             Scribe_Values.Look(ref Factor_Masterwork_Legendary, "Factor_Masterwork_Legendary", 6);
             Scribe_Values.Look(ref IsKeepOptionEnabled, "IsKeepOptionEnabled", false);
+            Scribe_Values.Look(ref LimitItemQualityToWorkbench, "LimitItemQualityToWorkbench", true);
+            Scribe_Values.Look(ref MaxQuality, "MaxQuality", QualityCategory.Legendary);
         }
 
         public void DoWindowContents(Rect canvas)
@@ -47,7 +53,7 @@ namespace UpgradeQuality
             Rect innerRect = new Rect();
             innerRect.x = 0;
             innerRect.y = 0;
-            innerRect.height = Text.LineHeight + 6f + 6 * (Text.LineHeight + 70f + 1f) + Text.LineHeight + 20f;
+            innerRect.height = Text.LineHeight + 6f + 6 * (Text.LineHeight + 70f + 1f) + 3 * Text.LineHeight + 20f;
             innerRect.width = canvas.width - 20f;
             Widgets.BeginScrollView(canvas, ref ScrollPosition, innerRect);
             list.Begin(innerRect);
@@ -61,7 +67,9 @@ namespace UpgradeQuality
             BuildMaterialSlider(list, ref Factor_Good_Excellent, ref GoodBuffer, goodString, excellentString);
             BuildMaterialSlider(list, ref Factor_Excellent_Masterwork, ref ExcellentBuffer, excellentString, masterworkString);
             BuildMaterialSlider(list, ref Factor_Masterwork_Legendary, ref MasterworkBuffer, masterworkString, legendaryString);
-            BuildCheckBox(list);
+            BuildCheckBox(list, ref IsKeepOptionEnabled, "UpgQlty.Labels.Settings.IsKeepOptionEnabled", "UpgQlty.Tooltips.Settings.IsKeepOptionEnabled");
+            BuildCheckBox(list, ref LimitItemQualityToWorkbench, "UpgQlty.Labels.Settings.LimitItemQualityToWorkbench", "UpgQlty.Tooltips.Settings.LimitItemQualityToWorkbench");
+            BuildQualitySelector(list);
 
             list.End();
             Widgets.EndScrollView();
@@ -91,13 +99,39 @@ namespace UpgradeQuality
             BuildSlider(listing_Standard, ref matRef, ref intBuf, 0.01f, 20f, labelText, tooltiptext, withGap);
         }
 
-        private void BuildCheckBox(Listing_Standard listing_Standard)
+        private void BuildCheckBox(Listing_Standard listing_Standard, ref bool option, string labelKey, string tooltipKey)
         {
             var contentRect = listing_Standard.GetRect(Text.LineHeight);
             var labelRect = contentRect.LeftHalf();
             var checkBox = contentRect.RightHalf();
-            Widgets.Label(labelRect, "UpgQlty.Labels.Settings.IsKeepOptionEnabled".Translate());
-            Widgets.Checkbox(checkBox.position, ref IsKeepOptionEnabled, Text.LineHeight);
+            Widgets.Label(labelRect, labelKey.Translate());
+            TooltipHandler.TipRegion(labelRect, tooltipKey.Translate());
+            Widgets.Checkbox(checkBox.position, ref option, Text.LineHeight);
+        }
+
+        private void BuildQualitySelector(Listing_Standard listing_Standard)
+        {
+            var contentRect = listing_Standard.GetRect(Text.LineHeight);
+            var labelRect = contentRect.LeftHalf();
+            var selector = contentRect.RightHalf();
+            Widgets.Label(labelRect, "UpgQlty.Labels.Settings.MaxQuality".Translate());
+            TooltipHandler.TipRegion(labelRect, "UpgQlty.Tooltips.Settings.MaxQuality".Translate());
+
+            // Implementation for quality picker dropdown
+            if (Widgets.ButtonText(selector, MaxQuality.GetLabel()))
+            {
+                var options = new List<FloatMenuOption>();
+
+                // Add each quality level as an option
+                foreach (QualityCategory quality in QualityUtility.AllQualityCategories)
+                {
+                    options.Add(new FloatMenuOption(quality.GetLabel(), () => {
+                        MaxQuality = quality;
+                    }));
+                }
+
+                Find.WindowStack.Add(new FloatMenu(options) { vanishIfMouseDistant = true });
+            }
         }
     }
 }

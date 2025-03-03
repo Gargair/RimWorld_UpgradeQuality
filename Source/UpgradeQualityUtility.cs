@@ -179,7 +179,7 @@ namespace UpgradeQuality
                     UpgradeQualityUtility.LogMessage("IsKeepOptionEnabled:", UpgradeQuality.Settings.IsKeepOptionEnabled);
                 }
 #endif
-                if (UpgradeQuality.Settings.IsKeepOptionEnabled || quality < QualityCategory.Legendary)
+                if (UpgradeQuality.Settings.IsKeepOptionEnabled || quality < UpgradeQuality.Settings.MaxQuality)
                 {
                     if (thing is Verse.Building building)
                     {
