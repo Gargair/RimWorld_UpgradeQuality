@@ -79,11 +79,18 @@ namespace UpgradeQuality.Building
             }
             thingDef.selectable = def.selectable;
             thingDef.constructEffect = def.constructEffect;
-            thingDef.building.isEdifice = false;
-            thingDef.building.watchBuildingInSameRoom = def.building.watchBuildingInSameRoom;
-            thingDef.building.watchBuildingStandDistanceRange = def.building.watchBuildingStandDistanceRange;
-            thingDef.building.watchBuildingStandRectWidth = def.building.watchBuildingStandRectWidth;
-            thingDef.building.artificialForMeditationPurposes = def.building.artificialForMeditationPurposes;
+            if (def.building != null)
+            {
+                thingDef.building.isEdifice = false;
+                thingDef.building.watchBuildingInSameRoom = def.building.watchBuildingInSameRoom;
+                thingDef.building.watchBuildingStandDistanceRange = def.building.watchBuildingStandDistanceRange;
+                thingDef.building.watchBuildingStandRectWidth = def.building.watchBuildingStandRectWidth;
+                thingDef.building.artificialForMeditationPurposes = def.building.artificialForMeditationPurposes;
+            }
+            else
+            {
+                thingDef.building = null;
+            }
             thingDef.constructionSkillPrerequisite = def.constructionSkillPrerequisite;
             thingDef.artisticSkillPrerequisite = def.artisticSkillPrerequisite;
             thingDef.clearBuildingArea = false;

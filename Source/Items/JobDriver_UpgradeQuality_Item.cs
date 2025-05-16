@@ -124,7 +124,11 @@ namespace UpgradeQuality.Items
             yield return Toils_Recipe.CheckIfRecipeCanFinishNow();
             yield return FinishRecipeAndStartStoringProduct(TargetIndex.None);
             yield return Toils_Haul.CarryHauledThingToCell(TargetIndex.B);
+#if V14
             yield return Toils_Haul.PlaceCarriedThingInCellFacing(TargetIndex.B);
+#elif V15
+            yield return Toils_Haul.PlaceHauledThingInCell(TargetIndex.B, Toils_Haul.DropCarriedThing(), true, true);
+#endif
             yield break;
         }
 
@@ -288,7 +292,7 @@ namespace UpgradeQuality.Items
                     }
                 }
 
-                if (curJob == null || curJob.bill == null)
+                if (curJob == null || curJob.bill == null || curJob.bill.GetStoreMode() == BillStoreModeDefOf.DropOnFloor)
                 {
                     if (!GenPlace.TryPlaceThing(thingToUpgrade, actor.Position, actor.Map, ThingPlaceMode.Near, null, null, default(Rot4)))
                     {
@@ -301,45 +305,30 @@ namespace UpgradeQuality.Items
 #endif
                         Find.Selector.Select(thingToUpgrade);
                     }
-                    return;
-                }
-                if (curJob.bill.GetStoreMode() == BillStoreModeDefOf.DropOnFloor)
-                {
-                    if (!GenPlace.TryPlaceThing(thingToUpgrade, actor.Position, actor.Map, ThingPlaceMode.Near, null, null, default(Rot4)))
-                    {
-                        UpgradeQualityUtility.LogError(actor, "could not drop recipe product", thingToUpgrade, "near", actor.Position);
-                    }
-                    if (hasUnfinishedThingSelected)
-                    {
-#if DEBUG && DEBUGITEMS
-                        UpgradeQualityUtility.LogMessage("FinishRecipeAndStartStoringProduct", "selecting2");
-#endif
-                        Find.Selector.Select(thingToUpgrade);
-                    }
                     actor.jobs.EndCurrentJob(JobCondition.Succeeded, true, true);
                     return;
                 }
-                IntVec3 invalid = IntVec3.Invalid;
+                IntVec3 targetCell = IntVec3.Invalid;
                 if (curJob.bill.GetStoreMode() == BillStoreModeDefOf.BestStockpile)
                 {
-                    StoreUtility.TryFindBestBetterStoreCellFor(thingToUpgrade, actor, actor.Map, StoragePriority.Unstored, actor.Faction, out invalid, true);
+                    StoreUtility.TryFindBestBetterStoreCellFor(thingToUpgrade, actor, actor.Map, StoragePriority.Unstored, actor.Faction, out targetCell, true);
                 }
                 else if (curJob.bill.GetStoreMode() == BillStoreModeDefOf.SpecificStockpile)
                 {
 #if V14
-                    StoreUtility.TryFindBestBetterStoreCellForIn(thingToUpgrade, actor, actor.Map, StoragePriority.Unstored, actor.Faction, curJob.bill.GetStoreZone().slotGroup, out invalid, true);
+                    StoreUtility.TryFindBestBetterStoreCellForIn(thingToUpgrade, actor, actor.Map, StoragePriority.Unstored, actor.Faction, curJob.bill.GetStoreZone().slotGroup, out targetCell, true);
 #elif V15
-                    StoreUtility.TryFindBestBetterStoreCellForIn(thingToUpgrade, actor, actor.Map, StoragePriority.Unstored, actor.Faction, curJob.bill.GetSlotGroup(), out invalid, true);
+                    StoreUtility.TryFindBestBetterStoreCellForIn(thingToUpgrade, actor, actor.Map, StoragePriority.Unstored, actor.Faction, curJob.bill.GetSlotGroup(), out targetCell, true);
 #endif
                 }
                 else
                 {
                     Log.ErrorOnce("Unknown store mode", 9158246);
                 }
-                if (invalid.IsValid)
+                if (targetCell.IsValid)
                 {
                     actor.carryTracker.TryStartCarry(thingToUpgrade);
-                    curJob.targetB = invalid;
+                    curJob.targetB = targetCell;
                     if (productIndex != TargetIndex.None)
                     {
                         curJob.SetTarget(productIndex, thingToUpgrade);
