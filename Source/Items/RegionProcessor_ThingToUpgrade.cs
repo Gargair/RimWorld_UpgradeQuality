@@ -83,7 +83,7 @@ namespace UpgradeQuality.Items
             }
             if (!item.TryGetQuality(out QualityCategory quality))
             {
-                return true;
+                return false;
             }
             if(this.includeMaxQuality)
             {
