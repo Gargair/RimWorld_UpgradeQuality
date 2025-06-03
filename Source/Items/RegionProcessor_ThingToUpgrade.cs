@@ -14,20 +14,16 @@ namespace UpgradeQuality.Items
         private double searchRadiusSquared;
         private IntVec3 anchorCell;
         private ThingFilter itemFilter;
-        private QualityCategory maxQuality;
-        private bool includeMaxQuality;
 
         public List<Thing> ValidItems = new List<Thing>();
 
-        public RegionProcessor_ThingToUpgrade(Pawn worker, double searchRadius, IntVec3 anchorCell, ThingFilter itemFilter, QualityCategory maxQuality, bool includeMaxQuality)
+        public RegionProcessor_ThingToUpgrade(Pawn worker, double searchRadius, IntVec3 anchorCell, ThingFilter itemFilter)
         {
             this.worker = worker;
             this.searchRadius = searchRadius;
             this.searchRadiusSquared = searchRadius * searchRadius;
             this.anchorCell = anchorCell;
             this.itemFilter = itemFilter;
-            this.maxQuality = maxQuality;
-            this.includeMaxQuality = includeMaxQuality;
         }
 
         public void Reset()
@@ -81,15 +77,7 @@ namespace UpgradeQuality.Items
             {
                 return false;
             }
-            if (!item.TryGetQuality(out QualityCategory quality))
-            {
-                return false;
-            }
-            if(this.includeMaxQuality)
-            {
-                return quality <= this.maxQuality;
-            }
-            return quality < this.maxQuality;
+            return true;
         }
     }
 }

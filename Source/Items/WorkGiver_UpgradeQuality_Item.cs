@@ -1,6 +1,7 @@
 ﻿using RimWorld;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 using Verse;
 using Verse.AI;
@@ -174,26 +175,24 @@ namespace UpgradeQuality.Items
 
         private static List<Thing> FindItemsToUpgrade(Pawn pawn, Thing bench, Bill bill, QualityCategory maxQuality)
         {
-            Region validRegionAt = pawn.Map.regionGrid.GetValidRegionAt(GetBillGiverRootCell(bench, pawn));
-            if (validRegionAt == null)
-            {
-                return new List<Thing>();
-            }
-            var proc = new RegionProcessor_ThingToUpgrade(pawn, bill.ingredientSearchRadius, GetBillGiverRootCell(bench, pawn), bill.ingredientFilter, maxQuality, false);
-            RegionTraverser.BreadthFirstTraverse(validRegionAt, proc, 99999, RegionType.Set_Passable);
-            proc.Sort();
-            return proc.ValidItems;
+            List<Thing> items = GetAllItemsForPawn(pawn, GetBillGiverRootCell(bench, pawn), bill.ingredientSearchRadius, bill.ingredientFilter);
+            return items.Where(item => item.TryGetQuality(out QualityCategory quality) && quality < maxQuality).ToList();
         }
 
         private static List<Thing> GetAllPossibleIngredients(Bill bill, Pawn pawn, Thing billGiver)
         {
-            Region validRegionAt = pawn.Map.regionGrid.GetValidRegionAt(GetBillGiverRootCell(billGiver, pawn));
-            if (validRegionAt == null)
+            return GetAllItemsForPawn(pawn, GetBillGiverRootCell(billGiver, pawn), bill.ingredientSearchRadius, null);
+        }
+
+        private static List<Thing> GetAllItemsForPawn(Pawn pawn, IntVec3 startCell, double searchRadius, ThingFilter itemFilter)
+        {
+            Region startRegion = pawn.Map.regionGrid.GetValidRegionAt(startCell);
+            if (startRegion == null)
             {
                 return new List<Thing>();
             }
-            var proc = new RegionProcessor_ThingToUpgrade(pawn, bill.ingredientSearchRadius, GetBillGiverRootCell(billGiver, pawn), null, QualityCategory.Legendary, true);
-            RegionTraverser.BreadthFirstTraverse(validRegionAt, proc, 99999, RegionType.Set_Passable);
+            RegionProcessor_ThingToUpgrade proc = new RegionProcessor_ThingToUpgrade(pawn, searchRadius, startCell, itemFilter);
+            RegionTraverser.BreadthFirstTraverse(startRegion, proc);
             proc.Sort();
             return proc.ValidItems;
         }
