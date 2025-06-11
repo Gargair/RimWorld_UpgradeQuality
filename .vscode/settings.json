@@ -1,4 +1,17 @@
 {
     "dotnet.server.useOmnisharp": true,
-    "omnisharp.useModernNet": true
+    "omnisharp.useModernNet": true,
+    "dotnet.formatting.organizeImportsOnFormat": true,
+    "omnisharp.enableEditorConfigSupport": true,
+    "dotnet.defaultSolution": "Source/UpgradeQuality.sln",
+    "files.exclude": {
+        "**/bin": true,
+        "**/obj": true,
+        "**/.vs": true
+    },
+    "search.exclude": {
+        "**/bin": true,
+        "**/obj": true,
+        "**/.vs": true
+    }
 }

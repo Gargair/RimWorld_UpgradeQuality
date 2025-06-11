@@ -70,7 +70,7 @@ namespace UpgradeQuality.Building
             thingDef.SetStatBaseValue(StatDefOf.Beauty, -8f);
             thingDef.SetStatBaseValue(StatDefOf.Flammability, def.BaseFlammability);
             thingDef.fillPercent = 0.2f;
-            thingDef.pathCost = DefGenerator.StandardItemPathCost;
+            thingDef.pathCost = 14;
             thingDef.description = def.description;
             thingDef.passability = def.passability;
             if (thingDef.passability > Traversability.PassThroughOnly)
