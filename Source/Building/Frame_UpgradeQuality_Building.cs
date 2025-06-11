@@ -37,33 +37,6 @@ namespace UpgradeQuality.Building
             Comp?.CancelUpgrade();
         }
 
-#if V14
-        public string CustomGetInspectString(StringBuilder stringBuilder)
-        {
-            stringBuilder.AppendLineIfNotEmpty();
-            stringBuilder.AppendLine("ContainedResources".Translate() + ":");
-            List<ThingDefCountQuality> list = NeededResources;
-            for (int i = 0; i < list.Count; i++)
-            {
-                ThingDefCountQuality need = list[i];
-                int num = need.Count;
-                IEnumerable<ThingDefCountClass> source = this.MaterialsNeeded();
-                foreach (ThingDefCountClass thingDefCountClass in source.Where(needed => needed.thingDef == need.ThingDef))
-                {
-                    num -= thingDefCountClass.count;
-                }
-                stringBuilder.AppendLine(string.Concat(new object[]
-                {
-                    need.ThingDef.LabelCap + ": ",
-                    num,
-                    " / ",
-                    need.Count
-                }));
-            }
-            stringBuilder.Append("WorkLeft".Translate() + ": " + this.WorkLeft.ToStringWorkAmount());
-            return stringBuilder.ToString();
-        }
-#endif
         public override void ExposeData()
         {
             base.ExposeData();
@@ -87,19 +60,11 @@ namespace UpgradeQuality.Building
             {
                 qualityComp.SetQuality(qualityComp.Quality + 1, ArtGenerationContext.Colony);
             }
-#if V14
-            var compArt = thingToChange.TryGetComp<CompArt>();
-            if (compArt != null)
-            {
-                compArt.JustCreatedBy(worker);
-            }
-#else
             if(thingToChange.TryGetComp<CompArt>(out CompArt compArt))
             {
                 compArt.JustCreatedBy(worker);
             }
-#endif
-
+            
             if (!this.Destroyed)
             {
                 this.Destroy(DestroyMode.Vanish);

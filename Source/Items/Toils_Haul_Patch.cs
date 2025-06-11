@@ -7,10 +7,8 @@ using Verse.AI;
 
 namespace UpgradeQuality.Items
 {
-#if V15
     [HarmonyPatchCategory("UpgradeItems")]
     [HarmonyPatch]
-#endif
     public class Toils_Haul_Patch_PlacedThings
     {
         [HarmonyTargetMethod]
@@ -19,11 +17,7 @@ namespace UpgradeQuality.Items
 #if DEBUG && DEBUGITEMS
             UpgradeQualityUtility.LogMessage("Start finding method to transpile");
 #endif
-#if V15
             foreach (var t in AccessTools.InnerTypes(typeof(Toils_Haul)))
-#else
-            foreach(var t in typeof(Toils_Haul).GetNestedTypes(AccessTools.all))
-#endif
             {
 #if DEBUG && DEBUGITEMS
                 UpgradeQualityUtility.LogMessage(t.FullName);

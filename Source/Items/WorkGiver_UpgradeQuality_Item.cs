@@ -85,9 +85,7 @@ namespace UpgradeQuality.Items
             }
             if (billGiver.BillStack.Count == 0)
             {
-#if !V14
                 JobFailReason.IsSilent();
-#endif
                 return null;
             }
             JobFailReason.Is("UpgQlty.Messages.NoUpgradeItems".Translate(), null);

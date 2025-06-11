@@ -1,7 +1,6 @@
 ﻿using RimWorld;
 using System.Collections.Generic;
 using UnityEngine;
-using UpgradeQuality.Building;
 using Verse;
 
 namespace UpgradeQuality

@@ -4,9 +4,7 @@ using Verse;
 
 namespace UpgradeQuality.Building
 {
-#if PatchCategory
     [HarmonyPatchCategory("UpgradeBuildings")]
-#endif
     [HarmonyPatch(typeof(GenConstruct), "BlocksConstruction")]
     internal class ReplaceFrameNoBlock
     {

@@ -28,7 +28,7 @@ namespace UpgradeQuality
 #endif
             var harmony = new Harmony("rakros.rimworld.upgradequality");
             FrameUtility.AddCustomFrames();
-#if PatchCategory
+
             try
             {
                 harmony.PatchCategory("UpgradeItems");
@@ -47,23 +47,6 @@ namespace UpgradeQuality
                 LogError(e);
                 LogError("Upgrading of buildings will not work.");
             }
-#else
-            harmony.PatchAll();
-            //var innerDisplayClass = AccessTools.FirstInner(typeof(Verse.AI.Toils_Haul), (inner) => inner.Name.Contains("<>c__DisplayClass6_0"));
-            //if (innerDisplayClass == null)
-            //{
-            //    LogError("Failed to find type for patching of Toils_Haul");
-            //    return;
-            //}
-            //var method = AccessTools.FirstMethod(innerDisplayClass, (m) => m.Name.Contains("<PlaceHauledThingInCell>b__0"));
-            //if (method == null)
-            //{
-            //    LogError("Failed to find method for patching of Toils_Haul");
-            //    return;
-            //}
-            //var transpiler = AccessTools.Method(typeof(Toils_Haul_Patch_PlacedThings), nameof(Toils_Haul_Patch_PlacedThings.Transpiler));
-            //harmony.Patch(method, transpiler: new HarmonyMethod(transpiler));
-#endif
         }
 
         public static UpgradeQualitySettings Settings;

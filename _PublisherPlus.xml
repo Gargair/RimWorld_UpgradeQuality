@@ -8,5 +8,6 @@
     <exclude>Source</exclude>
     <exclude>v1.4\Assemblies\UpgradeQuality.pdb</exclude>
     <exclude>v1.5\Assemblies\UpgradeQuality.pdb</exclude>
+    <exclude>v1.6\Assemblies\UpgradeQuality.pdb</exclude>
   </Excluded>
 </Configuration>

@@ -8,9 +8,7 @@ using Verse;
 
 namespace UpgradeQuality.Building
 {
-#if PatchCategory
     [HarmonyPatchCategory("UpgradeBuildings")]
-#endif
     [HarmonyPatch(typeof(GenSpawn), "SpawningWipes")]
     internal static class ReplaceFrameNoWipe
     {

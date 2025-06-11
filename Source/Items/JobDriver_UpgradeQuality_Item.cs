@@ -97,38 +97,23 @@ namespace UpgradeQuality.Items
                 {
                     var thingToUpgrade = unfinishedUpgrade.thingToUpgrade;
                     float multiplier = 1f;
-#if V14
-                    var qualityComp = thingToUpgrade.TryGetComp<CompQuality>();
-                    if(qualityComp != null) {
-                        multiplier = UpgradeQualityUtility.GetMultiplier(qualityComp.Quality);
-                    }
-#else
                     if (thingToUpgrade.TryGetComp<CompQuality>(out var qualityComp))
                     {
                         multiplier = UpgradeQualityUtility.GetMultiplier(qualityComp.Quality);
                     }
-#endif
                     float num = thingToUpgrade.def.GetStatValueAbstract(StatDefOf.WorkToMake, thingToUpgrade.Stuff) * multiplier;
                     return 1f - workLeft / num;
                 }
                 else
                 {
-#if V14
-                    float num = curJob.bill.recipe.WorkAmountTotal(thing.Stuff);
-#else
                     float num = curJob.bill.recipe.WorkAmountTotal(thing);
-#endif
                     return 1f - workLeft / num;
                 }
             }).FailOnDespawnedNullOrForbiddenPlacedThings(TargetIndex.A).FailOnCannotTouch(TargetIndex.A, PathEndMode.InteractionCell);
             yield return Toils_Recipe.CheckIfRecipeCanFinishNow();
             yield return FinishRecipeAndStartStoringProduct(TargetIndex.None);
             yield return Toils_Haul.CarryHauledThingToCell(TargetIndex.B);
-#if V14
-            yield return Toils_Haul.PlaceCarriedThingInCellFacing(TargetIndex.B);
-#elif V15
             yield return Toils_Haul.PlaceHauledThingInCell(TargetIndex.B, Toils_Haul.DropCarriedThing(), true, true);
-#endif
             yield break;
         }
 
@@ -177,17 +162,10 @@ namespace UpgradeQuality.Items
                 UpgradeQualityUtility.LogMessage(curJob.bill.GetType().FullName);
 #endif
                 float multiplier = 1f;
-#if V14
-                var qualityComp = thingToUpgrade.TryGetComp<CompQuality>();
-                if(qualityComp != null) {
-                    multiplier = UpgradeQualityUtility.GetMultiplier(qualityComp.Quality);
-                }
-#else
                 if (thingToUpgrade.TryGetComp<CompQuality>(out var qualityComp))
                 {
                     multiplier = UpgradeQualityUtility.GetMultiplier(qualityComp.Quality);
                 }
-#endif
                 unfinishedThing.Creator = actor;
                 unfinishedThing.BoundBill = (Bill_ProductionWithUft)curJob.bill;
                 unfinishedThing.ingredients = list.Where(t => t != thingToUpgrade).ToList();
@@ -315,11 +293,7 @@ namespace UpgradeQuality.Items
                 }
                 else if (curJob.bill.GetStoreMode() == BillStoreModeDefOf.SpecificStockpile)
                 {
-#if V14
-                    StoreUtility.TryFindBestBetterStoreCellForIn(thingToUpgrade, actor, actor.Map, StoragePriority.Unstored, actor.Faction, curJob.bill.GetStoreZone().slotGroup, out targetCell, true);
-#elif V15
                     StoreUtility.TryFindBestBetterStoreCellForIn(thingToUpgrade, actor, actor.Map, StoragePriority.Unstored, actor.Faction, curJob.bill.GetSlotGroup(), out targetCell, true);
-#endif
                 }
                 else
                 {
