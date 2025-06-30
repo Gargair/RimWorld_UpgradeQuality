@@ -1,8 +1,10 @@
-﻿using HarmonyLib;
-using RimWorld;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
+using HarmonyLib;
+using JetBrains.Annotations;
+using RimWorld;
 using UnityEngine;
 using UpgradeQuality.Building;
 using UpgradeQuality.Items;
@@ -46,6 +48,35 @@ namespace UpgradeQuality
             {
                 LogError(e);
                 LogError("Upgrading of buildings will not work.");
+            }
+
+            if (ModLister.GetActiveModWithIdentifier("MalteSchulze.RIMMSqol") != null)
+            {
+                LogMessage("Found active RIMMSqol trying to add compability");
+                Type qolModType = Type.GetType("RIMMSqol.QOLMod, RIMMSqol");
+                if (qolModType != null)
+                {
+                    try
+                    {
+                        Action<Mod> callback = (Mod mod) =>
+                        {
+                            UpgradeQualityUtility.ClearCachedBaseCosts();
+                            LogMessage("Cleared cache after setting change");
+                        };
+                        MethodInfo addApplySettingsListenerMethod = qolModType.GetMethod("addApplySettingsListener", BindingFlags.Static | BindingFlags.Public);
+                        addApplySettingsListenerMethod.Invoke(null, new object[] { callback });
+                        LogMessage("Compability with RIMMSqol added");
+                    }
+                    catch (Exception ex)
+                    {
+                        LogError("Failed to add compability with RIMMSqol");
+                        LogError(ex);
+                    }
+                }
+                else
+                {
+                    LogError("Did not find type for RIMMSqol.QOLMod despite mod active.");
+                }
             }
         }
 
@@ -121,6 +152,11 @@ namespace UpgradeQuality
                 return tmpCostList.Select(x => new ThingDefCountQuality(x.ThingDef, Mathf.CeilToInt(x.Count * mult), x.Range)).ToList();
             }
             return null;
+        }
+
+        public static void ClearCachedBaseCosts()
+        {
+            CachedBaseCosts.Clear();
         }
 
         public static float GetMultiplier(QualityCategory fromQuality)
