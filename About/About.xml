@@ -3,7 +3,7 @@
   <name>Upgrade Quality</name>
   <packageId>rakros.upgradequality</packageId>
   <author>Rakros</author>
-  <modVersion>1.5.5</modVersion>
+  <modVersion>1.5.6</modVersion>
   <modIconPath IgnoreIfNoMatchingField="True">UpgradeQuality/Icon/ModIcon</modIconPath>
   <url>https://github.com/Gargair/RimWorld_UpgradeQuality</url>
   <supportedVersions>
@@ -21,8 +21,34 @@
   </modDependencies>
   <loadAfter>
     <li>brrainz.harmony</li>
+    <li>MalteSchulze.RIMMSqol</li>
   </loadAfter>
-  <description>Allows upgrade Quality of everything that has one.
-  Buildings are upgraded in place. Items are upgraded at the upgrade workbench.
+  <description>Allows to upgrade Quality of everything that has one.
+    Upgrading costs a lot of resources and need to be available for upgrading.
+
+    The factor for the costs can be changed in the mod settings. At default they are:
+    From awful to poor: 1
+    From poor to normal: 2
+    From normal to good: 3
+    From good to excellent: 4
+    From excellent to masterwork: 5
+    From masterwork to legendary: 6
+    This affects materials and time to build/craft.
+
+    Additionally it is possible to limit the maximum quality a building or item can be upgraded to.
+    For items you need to pay special attention, they are limited to the quality of the workbench (can be disabled in options)
+
+    Buildings are upgraded in place. 
+    A frame will be placed on top of the building and your colonists will build it like a normal building. 
+    Once the frame is finished construction, the building will be upgraded.
+    
+    Items are upgraded at the upgrade workbench.
+    The item filter for the bills will affect the items that will be upgraded.
+    The materials required for the upgrade will be decided by the recipe of the item.
+    This mod has the same detection mechanism as the base game for the ingredients stat.
+    If no recipe is detected as fallback the same item with the same quality is required as ingredient.
+
+    Support for RIMMSqol
+    If you change a recipe or building it will be picked up for new upgrades. Already in progress ones still have the old costs.
   </description>
 </ModMetaData>
