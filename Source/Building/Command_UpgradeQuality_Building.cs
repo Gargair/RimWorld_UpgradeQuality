@@ -27,10 +27,7 @@ namespace UpgradeQuality.Building
                 if (item is ThingWithComps thing)
                 {
                     Comp_UpgradeQuality_Building upgradeQualityComp = thing.TryGetComp<Comp_UpgradeQuality_Building>();
-                    if (upgradeQualityComp != null)
-                    {
-                        upgradeQualityComp.SetDesiredQualityTo(cat, keepQuality);
-                    }
+                    upgradeQualityComp?.SetDesiredQualityTo(cat, keepQuality);
                 }
             }
         }

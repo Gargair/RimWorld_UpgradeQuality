@@ -122,7 +122,7 @@ namespace UpgradeQuality.Building
             };
         }
 
-        private static GiveShortHashDel GiveShortHash = AccessTools.MethodDelegate<GiveShortHashDel>(AccessTools.Method(typeof(ShortHashGiver), "GiveShortHash", null, null), null, true);
+        private static readonly GiveShortHashDel GiveShortHash = AccessTools.MethodDelegate<GiveShortHashDel>(AccessTools.Method(typeof(ShortHashGiver), "GiveShortHash", null, null), null, true);
         private delegate void GiveShortHashDel(Def d, Type t, HashSet<ushort> h);
     }
 }

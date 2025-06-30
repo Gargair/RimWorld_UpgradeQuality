@@ -1,7 +1,7 @@
-﻿using RimWorld;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using RimWorld;
 using Verse;
 using Verse.AI;
 
@@ -9,11 +9,11 @@ namespace UpgradeQuality.Items
 {
     public class RegionProcessor_ThingToUpgrade : RegionProcessorDelegateCache
     {
-        private Pawn worker;
-        private double searchRadius;
-        private double searchRadiusSquared;
-        private IntVec3 anchorCell;
-        private ThingFilter itemFilter;
+        private readonly Pawn worker;
+        private readonly double searchRadius;
+        private readonly double searchRadiusSquared;
+        private readonly IntVec3 anchorCell;
+        private readonly ThingFilter itemFilter;
 
         public List<Thing> ValidItems = new List<Thing>();
 
@@ -69,7 +69,23 @@ namespace UpgradeQuality.Items
 
         private bool ItemValidator(Thing item)
         {
-            if (!item.Spawned || (itemFilter != null && !itemFilter.Allows(item)) || item.IsForbidden(worker) || item.IsBurning() || !worker.CanReserve(item))
+            if (!item.Spawned)
+            {
+                return false;
+            }
+            if (item.IsForbidden(worker))
+            {
+                return false;
+            }
+            if (item.IsBurning())
+            {
+                return false;
+            }
+            if (itemFilter != null && !itemFilter.Allows(item))
+            {
+                return false;
+            }
+            if (!worker.CanReserve(item))
             {
                 return false;
             }

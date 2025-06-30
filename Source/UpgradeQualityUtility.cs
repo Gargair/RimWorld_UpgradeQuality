@@ -77,8 +77,7 @@ namespace UpgradeQuality
             if (q != null)
             {
                 var mult = GetMultiplier(q.Quality);
-                List<ThingDefCountQuality> tmpCostList = null;
-                if (CachedBaseCosts.TryGetValue((thing.def, thing.Stuff), out tmpCostList))
+                if (CachedBaseCosts.TryGetValue((thing.def, thing.Stuff), out List<ThingDefCountQuality> tmpCostList))
                 {
                 }
                 else if (thing.def is BuildableDef building)

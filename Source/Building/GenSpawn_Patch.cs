@@ -14,8 +14,7 @@ namespace UpgradeQuality.Building
     {
         public static void Postfix(BuildableDef newEntDef, BuildableDef oldEntDef, ref bool __result)
         {
-            var newThing = newEntDef as ThingDef;
-            if (newThing != null && FrameUtility.IsUpgradeBuildingFrame(newThing))
+            if (newEntDef is ThingDef newThing && FrameUtility.IsUpgradeBuildingFrame(newThing))
             {
                 __result = false;
                 return;

@@ -5,8 +5,8 @@ namespace UpgradeQuality.Building
 {
     public class GameComponent_ActiveQualityCompTracker : GameComponent
     {
-        private List<Comp_UpgradeQuality_Building> activeQualityComps = new List<Comp_UpgradeQuality_Building>();
-        private Game activeGame;
+        private readonly List<Comp_UpgradeQuality_Building> activeQualityComps = new List<Comp_UpgradeQuality_Building>();
+        private readonly Game activeGame;
         public GameComponent_ActiveQualityCompTracker(Game game) { this.activeGame = game; }
 
         public override void LoadedGame()

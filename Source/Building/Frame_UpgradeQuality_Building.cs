@@ -53,7 +53,7 @@ namespace UpgradeQuality.Building
 
             var qualityComp = thingToChange.GetComp<CompQuality>();
             var desiredQuality = DesiredQuality ?? QualityCategory.Awful;
-            var keepQuality = KeepQuality.HasValue ? KeepQuality.Value : false;
+            var keepQuality = KeepQuality ?? false;
             var comp = Comp;
 
             if (qualityComp != null && qualityComp.Quality < desiredQuality)
@@ -87,16 +87,13 @@ namespace UpgradeQuality.Building
         {
             Map map = base.Map;
             var desiredQuality = DesiredQuality ?? QualityCategory.Awful;
-            var keepQuality = KeepQuality.HasValue ? KeepQuality.Value : false;
+            var keepQuality = KeepQuality ?? false;
             var comp = Comp;
             this.Destroy(DestroyMode.FailConstruction);
             // The destroy implicitly cancels the upgrade.
             comp.SetDesiredQualityTo(desiredQuality, keepQuality);
             Lord lord = worker.GetLord();
-            if (lord != null)
-            {
-                lord.Notify_ConstructionFailed(worker, this, null);
-            }
+            lord?.Notify_ConstructionFailed(worker, this, null);
             MoteMaker.ThrowText(this.DrawPos, map, "TextMote_ConstructionFail".Translate(), 6f);
             if (base.Faction == Faction.OfPlayer && this.WorkToBuild > 1400f)
             {

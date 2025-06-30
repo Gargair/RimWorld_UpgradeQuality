@@ -46,8 +46,7 @@ namespace UpgradeQuality.Items
             this.FailOnBurningImmobile(TargetIndex.A);
             this.FailOn(delegate ()
             {
-                IBillGiver billGiver = this.job.GetTarget(TargetIndex.A).Thing as IBillGiver;
-                if (billGiver != null)
+                if (this.job.GetTarget(TargetIndex.A).Thing is IBillGiver billGiver)
                 {
                     if (this.job.bill.DeletedOrDereferenced)
                     {
@@ -66,8 +65,7 @@ namespace UpgradeQuality.Items
             {
                 if (this.job.targetQueueB != null && this.job.targetQueueB.Count == 1)
                 {
-                    UnfinishedThing unfinishedThing = this.job.targetQueueB[0].Thing as UnfinishedThing;
-                    if (unfinishedThing != null)
+                    if (this.job.targetQueueB[0].Thing is UnfinishedThing unfinishedThing)
                     {
                         unfinishedThing.BoundBill = (Bill_ProductionWithUft)this.job.bill;
                     }
@@ -92,8 +90,7 @@ namespace UpgradeQuality.Items
                 Job curJob = actor.CurJob;
                 Thing thing = curJob.GetTarget(TargetIndex.B).Thing;
                 float workLeft = ((JobDriver_DoBill)actor.jobs.curDriver).workLeft;
-                UnfinishedUpgrade unfinishedUpgrade = thing as UnfinishedUpgrade;
-                if (unfinishedUpgrade != null)
+                if (thing is UnfinishedUpgrade unfinishedUpgrade)
                 {
                     var thingToUpgrade = unfinishedUpgrade.thingToUpgrade;
                     float multiplier = 1f;
@@ -190,8 +187,7 @@ namespace UpgradeQuality.Items
 
         private static List<Thing> CalculateIngredients(Job job, Pawn actor)
         {
-            UnfinishedThing unfinishedThing = job.GetTarget(TargetIndex.B).Thing as UnfinishedThing;
-            if (unfinishedThing != null)
+            if (job.GetTarget(TargetIndex.B).Thing is UnfinishedThing unfinishedThing)
             {
                 List<Thing> ingredients = unfinishedThing.ingredients;
                 job.RecipeDef.Worker.ConsumeIngredient(unfinishedThing, job.RecipeDef, actor.Map);
@@ -228,8 +224,7 @@ namespace UpgradeQuality.Items
                             list.Add(thing);
                             if (job.RecipeDef.autoStripCorpses)
                             {
-                                IStrippable strippable = thing as IStrippable;
-                                if (strippable != null && strippable.AnythingToStrip())
+                                if (thing is IStrippable strippable && strippable.AnythingToStrip())
                                 {
                                     strippable.Strip();
                                 }
@@ -264,10 +259,7 @@ namespace UpgradeQuality.Items
                 {
                     qComp.SetQuality(qComp.Quality + 1, ArtGenerationContext.Colony);
                     var artComp = thingToUpgrade.TryGetComp<CompArt>();
-                    if (artComp != null)
-                    {
-                        artComp.JustCreatedBy(actor);
-                    }
+                    artComp?.JustCreatedBy(actor);
                 }
 
                 if (curJob == null || curJob.bill == null || curJob.bill.GetStoreMode() == BillStoreModeDefOf.DropOnFloor)

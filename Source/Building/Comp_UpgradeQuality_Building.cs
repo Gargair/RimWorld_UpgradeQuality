@@ -30,7 +30,7 @@ namespace UpgradeQuality.Building
                 return _compQuality;
             }
         }
-        private GameComponent_ActiveQualityCompTracker tracker = Current.Game.GetComponent<GameComponent_ActiveQualityCompTracker>();
+        private readonly GameComponent_ActiveQualityCompTracker tracker = Current.Game.GetComponent<GameComponent_ActiveQualityCompTracker>();
 
         public Comp_UpgradeQuality_Building() { }
 
@@ -96,8 +96,10 @@ namespace UpgradeQuality.Building
 #if DEBUG && DEBUGBUILDINGS
             UpgradeQualityUtility.LogMessage("Creating Frame");
 #endif
-            Frame_UpgradeQuality_Building frame = new Frame_UpgradeQuality_Building();
-            frame.def = FrameUtility.GetFrameDefForThingDef(parent.def);
+            Frame_UpgradeQuality_Building frame = new Frame_UpgradeQuality_Building
+            {
+                def = FrameUtility.GetFrameDefForThingDef(parent.def)
+            };
             frame.SetStuffDirect(parent.Stuff);
             frame.PostMake();
             frame.PostPostMake();
