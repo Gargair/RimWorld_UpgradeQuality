@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<Defs>
+  <ThingDef ParentName="UnfinishedBase">
+    <thingClass>UpgradeQuality.Items.UnfinishedUpgrade</thingClass>
+    <defName>UpgQlty_UnfinishedUpgrade</defName>
+    <label>unfinished pack</label>
+    <description>An item currently being upgraded.</description>
+    <statBases>
+      <Flammability>0.5</Flammability>
+    </statBases>
+    <graphicData>
+      <texPath>Things/Item/Unfinished/UnfinishedPack</texPath>
+      <graphicClass>Graphic_Single</graphicClass>
+    </graphicData>
+    <stuffCategories Inherit="false" />
+  </ThingDef>
+</Defs>
