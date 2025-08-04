@@ -80,8 +80,6 @@ namespace UpgradeQuality
             }
         }
 
-        public static UpgradeQualitySettings Settings;
-
         public static void LogWarning(params object[] messages)
         {
             var actualMessage = messages.Aggregate("[UpgradeQuality]", (logMessage, message) => logMessage + " " + message.ToStringSafe());
@@ -105,53 +103,63 @@ namespace UpgradeQuality
         public static List<ThingDefCountQuality> GetNeededResources(Thing thing)
         {
             var q = thing.TryGetComp<CompQuality>();
-            if (q != null)
+            if (q == null)
             {
-                var mult = GetMultiplier(q.Quality);
-                if (CachedBaseCosts.TryGetValue((thing.def, thing.Stuff), out List<ThingDefCountQuality> tmpCostList))
+                return new List<ThingDefCountQuality>();
+            }
+            var mult = GetMultiplier(q.Quality);
+            if (CachedBaseCosts.TryGetValue((thing.def, thing.Stuff), out List<ThingDefCountQuality> tmpCostList))
+            {
+                return MultiplyCosts(tmpCostList, mult);
+            }
+            if (thing.def is BuildableDef building)
+            {
+                tmpCostList = building.CostListAdjusted(thing.Stuff).Select(c => new ThingDefCountQuality(c.thingDef, c.count)).ToList();
+                CachedBaseCosts[(thing.def, thing.Stuff)] = tmpCostList;
+                return MultiplyCosts(tmpCostList, mult);
+            }
+            tmpCostList = new List<ThingDefCountQuality>();
+            RecipeDef recipeDef = GetRecipeForThing(thing.def);
+            if (recipeDef != null)
+            {
+                for (int i = 0; i < recipeDef.ingredients.Count; i++)
                 {
-                }
-                else if (thing.def is BuildableDef building)
-                {
-                    tmpCostList = thing.def.CostListAdjusted(thing.Stuff).Select(c => new ThingDefCountQuality(c.thingDef, c.count)).ToList();
-                    CachedBaseCosts[(thing.def, thing.Stuff)] = tmpCostList;
-                }
-                else
-                {
-                    IEnumerable<RecipeDef> recipes = from r in DefDatabase<RecipeDef>.AllDefsListForReading
-                                                     where r.products.Count == 1 && r.products.Any((ThingDefCountClass p) => p.thingDef == thing.def) && !r.IsSurgery
-                                                     select r;
-                    tmpCostList = new List<ThingDefCountQuality>();
-                    if (recipes.Any<RecipeDef>())
+                    IngredientCount ingredientCount = recipeDef.ingredients[i];
+                    ThingDef ingDef = null;
+                    if (ingredientCount.IsFixedIngredient)
                     {
-                        RecipeDef recipeDef = recipes.FirstOrDefault<RecipeDef>();
-                        if (recipeDef != null && !recipeDef.ingredients.NullOrEmpty<IngredientCount>())
-                        {
-                            for (int i = 0; i < recipeDef.ingredients.Count; i++)
-                            {
-                                IngredientCount ingredientCount = recipeDef.ingredients[i];
-                                ThingDef ingDef = null;
-                                if (ingredientCount.IsFixedIngredient)
-                                {
-                                    ingDef = ingredientCount.FixedIngredient;
-                                }
-                                else
-                                {
-                                    ingDef = thing.Stuff;
-                                }
-                                tmpCostList.Add(new ThingDefCountQuality(ingDef, ingredientCount.CountRequiredOfFor(ingDef, recipeDef)));
-                            }
-                        }
+                        ingDef = ingredientCount.FixedIngredient;
                     }
                     else
                     {
-                        tmpCostList.Add(new ThingDefCountQuality(thing.def, 1, new QualityRange(q.Quality, q.Quality)));
+                        ingDef = thing.Stuff;
                     }
-                    CachedBaseCosts[(thing.def, thing.Stuff)] = tmpCostList;
+                    tmpCostList.Add(new ThingDefCountQuality(ingDef, ingredientCount.CountRequiredOfFor(ingDef, recipeDef)));
                 }
-                return tmpCostList.Select(x => new ThingDefCountQuality(x.ThingDef, Mathf.CeilToInt(x.Count * mult), x.Range)).ToList();
             }
-            return null;
+            else
+            {
+                tmpCostList.Add(new ThingDefCountQuality(thing.def, 1, new QualityRange(q.Quality, q.Quality)));
+            }
+            CachedBaseCosts[(thing.def, thing.Stuff)] = tmpCostList;
+
+            return MultiplyCosts(tmpCostList, mult);
+        }
+
+        private static RecipeDef GetRecipeForThing(ThingDef thingDef)
+        {
+            IEnumerable<RecipeDef> recipes = from r in DefDatabase<RecipeDef>.AllDefsListForReading
+                                             where r.products.Count == 1
+                                               && r.products.Any((ThingDefCountClass p) => p.thingDef == thingDef)
+                                               && !r.IsSurgery
+                                               && !r.ingredients.NullOrEmpty<IngredientCount>()
+                                             select r;
+            return recipes.FirstOrDefault();
+        }
+
+        private static List<ThingDefCountQuality> MultiplyCosts(List<ThingDefCountQuality> costs, float multiplier)
+        {
+            return costs.Select(x => new ThingDefCountQuality(x.ThingDef, Mathf.CeilToInt(x.Count * multiplier), x.Range)).ToList();
         }
 
         public static void ClearCachedBaseCosts()

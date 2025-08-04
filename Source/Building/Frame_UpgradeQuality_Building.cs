@@ -1,7 +1,5 @@
-﻿using RimWorld;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+﻿using System.Collections.Generic;
+using RimWorld;
 using UpgradeQuality.Items;
 using Verse;
 using Verse.AI.Group;
@@ -17,15 +15,15 @@ namespace UpgradeQuality.Building
         {
             get
             {
-                return Comp?.desiredQuality;
+                return Comp?.DesiredQuality;
             }
         }
-        public List<ThingDefCountQuality> NeededResources;
+        public List<ThingDefCountQuality> NeededResources { get; set; }
         public bool? KeepQuality
         {
             get
             {
-                return Comp?.keepQuality;
+                return Comp?.KeepQuality;
             }
         }
 
@@ -60,17 +58,17 @@ namespace UpgradeQuality.Building
             {
                 qualityComp.SetQuality(qualityComp.Quality + 1, ArtGenerationContext.Colony);
             }
-            if(thingToChange.TryGetComp<CompArt>(out CompArt compArt))
+            if (thingToChange.TryGetComp<CompArt>(out CompArt compArt))
             {
                 compArt.JustCreatedBy(worker);
             }
-            
+
             if (!this.Destroyed)
             {
                 this.Destroy(DestroyMode.Vanish);
             }
             // The destroy implicitly cancels the upgrade.
-            comp.SetDesiredQualityTo(desiredQuality, keepQuality);
+            comp?.SetDesiredQualityTo(desiredQuality, keepQuality);
 
             worker.records.Increment(RecordDefOf.ThingsConstructed);
             if (thingToChange != null && thingToChange.GetStatValue(StatDefOf.WorkToBuild, true, -1) >= 9500f)
@@ -91,7 +89,7 @@ namespace UpgradeQuality.Building
             var comp = Comp;
             this.Destroy(DestroyMode.FailConstruction);
             // The destroy implicitly cancels the upgrade.
-            comp.SetDesiredQualityTo(desiredQuality, keepQuality);
+            comp?.SetDesiredQualityTo(desiredQuality, keepQuality);
             Lord lord = worker.GetLord();
             lord?.Notify_ConstructionFailed(worker, this, null);
             MoteMaker.ThrowText(this.DrawPos, map, "TextMote_ConstructionFail".Translate(), 6f);
