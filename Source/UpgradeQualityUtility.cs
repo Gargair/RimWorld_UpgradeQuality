@@ -219,56 +219,18 @@ namespace UpgradeQuality
                 return false;
             }
 
-            if (thing is Verse.Building building)
+            if (thing is Verse.Building building && BuildCopyCommandUtility.FindAllowedDesignator(building.def, true) != null)
             {
-#if DEBUG
-                if (Find.Selector.IsSelected(thing))
-                {
-                    UpgradeQualityUtility.LogMessage("Is building");
-                }
-#endif
-                if (BuildCopyCommandUtility.FindAllowedDesignator(building.def, true) != null)
-                {
-#if DEBUG
-                    if (Find.Selector.IsSelected(thing))
-                    {
-                        UpgradeQualityUtility.LogMessage("Is building with allowed designator");
-                    }
-#endif
-                    return true;
-                }
-
+                return true;
             }
-#if DEBUG
-            else
-            {
-                if (Find.Selector.IsSelected(thing))
-                {
-                    UpgradeQualityUtility.LogMessage("No building");
-                }
-            }
-#endif
 
             if (!RecipesForThingDef.ContainsKey(thing.def))
             {
-#if DEBUG
-                if (Find.Selector.IsSelected(thing))
-                {
-                    UpgradeQualityUtility.LogMessage("building recipe cache");
-                }
-#endif
                 List<RecipeDef> recipes = DefDatabase<RecipeDef>.AllDefsListForReading.Where(recipe => recipe.ProducedThingDef == thing.def).ToList();
                 RecipesForThingDef.Add(thing.def, recipes);
             }
 
             var thingRecipes = RecipesForThingDef[thing.def];
-
-#if DEBUG
-            if (Find.Selector.IsSelected(thing) && thingRecipes.Count == 0)
-            {
-                UpgradeQualityUtility.LogMessage("No recipes");
-            }
-#endif
 
             // If there are no recipes for the thing, it can be upgraded
             if (thingRecipes.Count == 0)
@@ -276,20 +238,7 @@ namespace UpgradeQuality
                 return true;
             }
 
-            foreach (var recipe in thingRecipes)
-            {
-                if (recipe.AvailableNow)
-                {
-#if DEBUG
-                    if (Find.Selector.IsSelected(thing))
-                    {
-                        UpgradeQualityUtility.LogMessage("Has recipe available now");
-                    }
-#endif
-                    return true;
-                }
-            }
-            return false;
+            return thingRecipes.Any(recipe => recipe.AvailableNow);
         }
 
         private static readonly Dictionary<ThingDef, List<RecipeDef>> RecipesForThingDef = new Dictionary<ThingDef, List<RecipeDef>>();

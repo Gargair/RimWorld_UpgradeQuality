@@ -240,10 +240,10 @@ namespace UpgradeQuality.Items
             }
         }
 
+        const string FinishRecipeAndStartStoringProductDebugName = "FinishRecipeAndStartStoringProduct";
         private static Toil FinishRecipeAndStartStoringProduct(TargetIndex productIndex = TargetIndex.A)
         {
-            const string DebugName = "FinishRecipeAndStartStoringProduct";
-            Toil toil = ToilMaker.MakeToil(DebugName);
+            Toil toil = ToilMaker.MakeToil(FinishRecipeAndStartStoringProductDebugName);
             toil.initAction = delegate ()
             {
                 Pawn actor = toil.actor;
@@ -254,12 +254,12 @@ namespace UpgradeQuality.Items
                 List<Thing> ingredients = CalculateIngredients(curJob, actor);
 
 #if DEBUG && DEBUGITEMS
-                UpgradeQualityUtility.LogMessage(DebugName, "hasUnfinishedThingSelected", hasUnfinishedThingSelected);
+                UpgradeQualityUtility.LogMessage(FinishRecipeAndStartStoringProductDebugName, "hasUnfinishedThingSelected", hasUnfinishedThingSelected);
 #endif
                 curJob.bill.Notify_IterationCompleted(actor, ingredients);
                 HandleArtFromQuality(actor, thingToUpgrade);
 
-                if (HandleDropOnFloor(DebugName, actor, curJob, thingToUpgrade, hasUnfinishedThingSelected))
+                if (HandleDropOnFloor(actor, curJob, thingToUpgrade, hasUnfinishedThingSelected))
                 {
                     return;
                 }
@@ -288,7 +288,7 @@ namespace UpgradeQuality.Items
                     if (hasUnfinishedThingSelected)
                     {
 #if DEBUG && DEBUGITEMS
-                        UpgradeQualityUtility.LogMessage(DebugName, "selecting3");
+                        UpgradeQualityUtility.LogMessage(FinishRecipeAndStartStoringProductDebugName, "selecting3");
 #endif
                         Find.Selector.Select(thingToUpgrade);
                     }
@@ -301,7 +301,7 @@ namespace UpgradeQuality.Items
                 if (hasUnfinishedThingSelected)
                 {
 #if DEBUG && DEBUGITEMS
-                    UpgradeQualityUtility.LogMessage(DebugName, "selecting4");
+                    UpgradeQualityUtility.LogMessage(FinishRecipeAndStartStoringProductDebugName, "selecting4");
 #endif
                     Find.Selector.Select(thingToUpgrade);
                 }
@@ -310,7 +310,7 @@ namespace UpgradeQuality.Items
             return toil;
         }
 
-        private static bool HandleDropOnFloor(string DebugName, Pawn actor, Job curJob, Thing thingToUpgrade, bool hasUnfinishedThingSelected)
+        private static bool HandleDropOnFloor(Pawn actor, Job curJob, Thing thingToUpgrade, bool hasUnfinishedThingSelected)
         {
             if (curJob == null || curJob.bill == null || curJob.bill.GetStoreMode() == BillStoreModeDefOf.DropOnFloor)
             {
@@ -321,7 +321,7 @@ namespace UpgradeQuality.Items
                 if (hasUnfinishedThingSelected)
                 {
 #if DEBUG && DEBUGITEMS
-                    UpgradeQualityUtility.LogMessage(DebugName, "selecting1");
+                    UpgradeQualityUtility.LogMessage(FinishRecipeAndStartStoringProductDebugName, "selecting1");
 #endif
                     Find.Selector.Select(thingToUpgrade);
                 }

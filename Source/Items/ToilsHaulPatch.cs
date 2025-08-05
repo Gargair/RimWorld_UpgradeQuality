@@ -1,8 +1,9 @@
-﻿using HarmonyLib;
-using RimWorld;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
+using System.Linq;
 using System.Reflection;
 using System.Reflection.Emit;
+using HarmonyLib;
+using RimWorld;
 using Verse.AI;
 
 namespace UpgradeQuality.Items
@@ -22,15 +23,16 @@ namespace UpgradeQuality.Items
 #if DEBUG && DEBUGITEMS
                 UpgradeQualityUtility.LogMessage(t.FullName);
 #endif
-                foreach (var m in AccessTools.GetDeclaredMethods(t))
+                MethodInfo method = AccessTools.GetDeclaredMethods(t).FirstOrDefault(m =>
                 {
 #if DEBUG && DEBUGITEMS
                     UpgradeQualityUtility.LogMessage($"\t{m.Name}");
 #endif
-                    if (m.Name.Contains("PlaceHauledThingInCell"))
-                    {
-                        return m;
-                    }
+                    return m.Name.Contains("PlaceHauledThingInCell");
+                });
+                if (method != null)
+                {
+                    return method;
                 }
             }
             return null;

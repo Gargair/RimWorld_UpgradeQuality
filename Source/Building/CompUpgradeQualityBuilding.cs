@@ -18,16 +18,16 @@ namespace UpgradeQuality.Building
             get => this._keepQuality;
             set => this._keepQuality = value;
         }
-        public CompPropertiesUpgradeQualityBuilding Props => (CompPropertiesUpgradeQualityBuilding)props;
+        public CompPropertiesUpgradeQualityBuilding Props => (CompPropertiesUpgradeQualityBuilding)this.props;
         private FrameUpgradeQualityBuilding _placedFrame;
         public FrameUpgradeQualityBuilding PlacedFrame
         {
             get => this._placedFrame;
             set => this._placedFrame = value;
         }
-        private DesignationManager DesignationManager => parent?.Map?.designationManager;
+        private DesignationManager DesignationManager => this.parent?.Map?.designationManager;
         private bool HasUpgradeDesignation => this.UpgradeDesignation != null;
-        private Designation UpgradeDesignation => DesignationManager?.DesignationOn(parent, UpgradeQualityDefOf.IncreaseQuality_Building);
+        private Designation UpgradeDesignation => this.DesignationManager?.DesignationOn(parent, UpgradeQualityDefOf.IncreaseQuality_Building);
         private bool needDesignationAfterSpawn = false;
         public bool SkipRemoveDesignation { get; set; } = false;
         private CompQuality _compQuality;
