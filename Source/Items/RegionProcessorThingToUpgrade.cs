@@ -15,7 +15,7 @@ namespace UpgradeQuality.Items
         private readonly IntVec3 anchorCell;
         private readonly ThingFilter itemFilter;
 
-        public List<Thing> ValidItems = new List<Thing>();
+        public List<Thing> ValidItems { get; } = new List<Thing>();
 
         public RegionProcessorThingToUpgrade(Pawn worker, double searchRadius, IntVec3 anchorCell, ThingFilter itemFilter)
         {
@@ -60,9 +60,9 @@ namespace UpgradeQuality.Items
             ValidItems.Sort((Thing t1, Thing t2) => (t1.Position - anchorCell).LengthHorizontalSquared.CompareTo((t2.Position - anchorCell).LengthHorizontalSquared));
         }
 
-        protected override bool RegionProcessor(Region region)
+        protected override bool RegionProcessor(Region reg)
         {
-            List<Thing> list = region.ListerThings.ThingsMatching(ThingRequest.ForGroup(ThingRequestGroup.HaulableAlways));
+            List<Thing> list = reg.ListerThings.ThingsMatching(ThingRequest.ForGroup(ThingRequestGroup.HaulableAlways));
             ValidItems.AddRange(list.Where(ItemValidator));
             return false;
         }

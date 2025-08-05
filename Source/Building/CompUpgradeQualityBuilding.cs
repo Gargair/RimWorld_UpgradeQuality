@@ -9,21 +9,21 @@ namespace UpgradeQuality.Building
         private QualityCategory _desiredQuality;
         public QualityCategory DesiredQuality
         {
-            get => _desiredQuality;
-            set => _desiredQuality = value;
+            get => this._desiredQuality;
+            set => this._desiredQuality = value;
         }
         private bool _keepQuality;
         public bool KeepQuality
         {
-            get => _keepQuality;
-            set => _keepQuality = value;
+            get => this._keepQuality;
+            set => this._keepQuality = value;
         }
         public CompPropertiesUpgradeQualityBuilding Props => (CompPropertiesUpgradeQualityBuilding)props;
         private FrameUpgradeQualityBuilding _placedFrame;
         public FrameUpgradeQualityBuilding PlacedFrame
         {
-            get => _placedFrame;
-            set => _placedFrame = value;
+            get => this._placedFrame;
+            set => this._placedFrame = value;
         }
         private DesignationManager DesignationManager => parent?.Map?.designationManager;
         private bool HasUpgradeDesignation => this.UpgradeDesignation != null;

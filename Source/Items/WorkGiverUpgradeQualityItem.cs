@@ -46,12 +46,12 @@ namespace UpgradeQuality.Items
             }
         }
 
-        public override Job JobOnThing(Pawn pawn, Thing bench, bool forced = false)
+        public override Job JobOnThing(Pawn pawn, Thing thing, bool forced = false)
         {
 #if DEBUG && DEBUGITEMS
-            UpgradeQualityUtility.LogMessage("JobOnThing on", bench.ThingID, "for", pawn.Name);
+            UpgradeQualityUtility.LogMessage("JobOnThing on", thing.ThingID, "for", pawn.Name);
 #endif
-            if (!(bench is IBillGiver billGiver) || !this.ThingIsUsableBillGiver(bench) || !billGiver.CurrentlyUsableForBills() || !billGiver.BillStack.AnyShouldDoNow || bench.IsBurning() || bench.IsForbidden(pawn))
+            if (!(thing is IBillGiver billGiver) || !this.ThingIsUsableBillGiver(thing) || !billGiver.CurrentlyUsableForBills() || !billGiver.BillStack.AnyShouldDoNow || thing.IsBurning() || thing.IsForbidden(pawn))
             {
 #if DEBUG && DEBUGITEMS
                 UpgradeQualityUtility.LogMessage("Bench not usable");
@@ -59,14 +59,14 @@ namespace UpgradeQuality.Items
                 return null;
             }
 
-            if (!pawn.CanReserve(bench, 1, -1, null, false))
+            if (!pawn.CanReserve(thing, 1, -1, null, false))
             {
 #if DEBUG && DEBUGITEMS
                 UpgradeQualityUtility.LogMessage("Pawn cant reserve");
 #endif
                 return null;
             }
-            if (!pawn.CanReserveAndReach(bench.InteractionCell, PathEndMode.OnCell, Danger.Some, 1, -1, null, false))
+            if (!pawn.CanReserveAndReach(thing.InteractionCell, PathEndMode.OnCell, Danger.Some, 1, -1, null, false))
             {
 #if DEBUG && DEBUGITEMS
                 UpgradeQualityUtility.LogMessage("Pawn cant reserve or reach");
@@ -89,7 +89,7 @@ namespace UpgradeQuality.Items
             }
             JobFailReason.Is("UpgQlty.Messages.NoUpgradeItems".Translate(), null);
             QualityCategory maxQualityForUpgradeItemBeforeUpgrade = UpgradeQuality.Settings.MaxQuality;
-            if (UpgradeQuality.Settings.LimitItemQualityToWorkbench && bench.TryGetQuality(out QualityCategory benchQuality))
+            if (UpgradeQuality.Settings.LimitItemQualityToWorkbench && thing.TryGetQuality(out QualityCategory benchQuality))
             {
                 maxQualityForUpgradeItemBeforeUpgrade = (QualityCategory)Math.Min((byte)maxQualityForUpgradeItemBeforeUpgrade, (byte)benchQuality);
             }
@@ -106,7 +106,7 @@ namespace UpgradeQuality.Items
                     JobFailReason.Is("MissingSkill".Translate(), null);
                     continue;
                 }
-                var unfinishedThing = FindUnfinishedUpgradeThing(pawn, bench, bill);
+                var unfinishedThing = FindUnfinishedUpgradeThing(pawn, thing, bill);
                 if (unfinishedThing != null)
                 {
 #if DEBUG && DEBUGITEMS
@@ -115,7 +115,7 @@ namespace UpgradeQuality.Items
                     return StartNewUpgradeJob(bill, billGiver, unfinishedThing, new List<ThingCount>());
                 }
 
-                List<Thing> list = FindItemsToUpgrade(pawn, bench, bill, maxQualityForUpgradeItemBeforeUpgrade);
+                List<Thing> list = FindItemsToUpgrade(pawn, thing, bill, maxQualityForUpgradeItemBeforeUpgrade);
                 if (list.NullOrEmpty())
                 {
 #if DEBUG && DEBUGITEMS
@@ -124,7 +124,7 @@ namespace UpgradeQuality.Items
                     JobFailReason.Is("UpgQlty.Messages.NoUpgradeItems".Translate(), null);
                     continue;
                 }
-                var possibleIngredients = GetAllPossibleIngredients(bill, pawn, bench);
+                var possibleIngredients = GetAllPossibleIngredients(bill, pawn, thing);
 #if DEBUG && DEBUGITEMS
                 UpgradeQualityUtility.LogMessage("Found", possibleIngredients.Count, "possible ingredients");
 #endif
@@ -313,8 +313,7 @@ namespace UpgradeQuality.Items
 
         private readonly List<ThingCount> chosenIngThings;
 
-
-        private class DefCountList
+        private sealed class DefCountList
         {
             public int Count
             {

@@ -24,13 +24,11 @@ namespace UpgradeQuality.Items
 
         public override void Destroy(DestroyMode mode = DestroyMode.Vanish)
         {
-            if (mode == DestroyMode.Cancel)
+            if (mode == DestroyMode.Cancel && this.thingToUpgrade != null)
             {
-                if (this.thingToUpgrade != null)
-                {
-                    GenPlace.TryPlaceThing(this.thingToUpgrade, base.Position, base.Map, ThingPlaceMode.Near);
-                }
+                GenPlace.TryPlaceThing(this.thingToUpgrade, base.Position, base.Map, ThingPlaceMode.Near);
             }
+
             base.Destroy(mode);
         }
     }

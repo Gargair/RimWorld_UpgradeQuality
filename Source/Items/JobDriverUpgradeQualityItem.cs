@@ -1,6 +1,6 @@
-﻿using RimWorld;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
+using RimWorld;
 using Verse;
 using Verse.AI;
 
@@ -63,13 +63,13 @@ namespace UpgradeQuality.Items
             Toil toil = ToilMaker.MakeToil("MakeNewToils");
             toil.initAction = delegate ()
             {
-                if (this.job.targetQueueB != null && this.job.targetQueueB.Count == 1)
+                if (this.job.targetQueueB != null &&
+                    this.job.targetQueueB.Count == 1 &&
+                    this.job.targetQueueB[0].Thing is UnfinishedThing unfinishedThing)
                 {
-                    if (this.job.targetQueueB[0].Thing is UnfinishedThing unfinishedThing)
-                    {
-                        unfinishedThing.BoundBill = (Bill_ProductionWithUft)this.job.bill;
-                    }
+                    unfinishedThing.BoundBill = (Bill_ProductionWithUft)this.job.bill;
                 }
+
                 this.job.bill.Notify_DoBillStarted(this.pawn);
             };
             yield return toil;
@@ -198,47 +198,52 @@ namespace UpgradeQuality.Items
             {
                 for (int i = 0; i < job.placedThings.Count; i++)
                 {
-                    if (job.placedThings[i].Count <= 0)
-                    {
-                        UpgradeQualityUtility.LogError("PlacedThing ", job.placedThings[i], " with count ", job.placedThings[i].Count, " for job ", job);
-                    }
-                    else
-                    {
-                        Thing thing;
-                        if (job.placedThings[i].Count < job.placedThings[i].thing.stackCount)
-                        {
-                            thing = job.placedThings[i].thing.SplitOff(job.placedThings[i].Count);
-                        }
-                        else
-                        {
-                            thing = job.placedThings[i].thing;
-                        }
-                        job.placedThings[i].Count = 0;
-                        if (list.Contains(thing))
-                        {
-                            UpgradeQualityUtility.LogError("Tried to add ingredient from job placed targets twice:", thing);
-                        }
-                        else
-                        {
-                            list.Add(thing);
-                            if (job.RecipeDef.autoStripCorpses)
-                            {
-                                if (thing is IStrippable strippable && strippable.AnythingToStrip())
-                                {
-                                    strippable.Strip();
-                                }
-                            }
-                        }
-                    }
+                    CheckPlacedThing(job, list, i);
                 }
             }
             job.placedThings = null;
             return list;
         }
 
+        private static void CheckPlacedThing(Job job, List<Thing> list, int i)
+        {
+            if (job.placedThings[i].Count <= 0)
+            {
+                UpgradeQualityUtility.LogError("PlacedThing ", job.placedThings[i], " with count ", job.placedThings[i].Count, " for job ", job);
+            }
+            else
+            {
+                Thing thing;
+                if (job.placedThings[i].Count < job.placedThings[i].thing.stackCount)
+                {
+                    thing = job.placedThings[i].thing.SplitOff(job.placedThings[i].Count);
+                }
+                else
+                {
+                    thing = job.placedThings[i].thing;
+                }
+                job.placedThings[i].Count = 0;
+                if (list.Contains(thing))
+                {
+                    UpgradeQualityUtility.LogError("Tried to add ingredient from job placed targets twice:", thing);
+                }
+                else
+                {
+                    list.Add(thing);
+                    if (job.RecipeDef.autoStripCorpses &&
+                        thing is IStrippable strippable &&
+                        strippable.AnythingToStrip())
+                    {
+                        strippable.Strip();
+                    }
+                }
+            }
+        }
+
         private static Toil FinishRecipeAndStartStoringProduct(TargetIndex productIndex = TargetIndex.A)
         {
-            Toil toil = ToilMaker.MakeToil("FinishRecipeAndStartStoringProduct");
+            const string DebugName = "FinishRecipeAndStartStoringProduct";
+            Toil toil = ToilMaker.MakeToil(DebugName);
             toil.initAction = delegate ()
             {
                 Pawn actor = toil.actor;
@@ -249,32 +254,13 @@ namespace UpgradeQuality.Items
                 List<Thing> ingredients = CalculateIngredients(curJob, actor);
 
 #if DEBUG && DEBUGITEMS
-                UpgradeQualityUtility.LogMessage("FinishRecipeAndStartStoringProduct", "hasUnfinishedThingSelected", hasUnfinishedThingSelected);
+                UpgradeQualityUtility.LogMessage(DebugName, "hasUnfinishedThingSelected", hasUnfinishedThingSelected);
 #endif
                 curJob.bill.Notify_IterationCompleted(actor, ingredients);
+                HandleArtFromQuality(actor, thingToUpgrade);
 
-                var qComp = thingToUpgrade.TryGetComp<CompQuality>();
-                if (qComp != null && qComp.Quality < QualityCategory.Legendary)
+                if (HandleDropOnFloor(DebugName, actor, curJob, thingToUpgrade, hasUnfinishedThingSelected))
                 {
-                    qComp.SetQuality(qComp.Quality + 1, ArtGenerationContext.Colony);
-                    var artComp = thingToUpgrade.TryGetComp<CompArt>();
-                    artComp?.JustCreatedBy(actor);
-                }
-
-                if (curJob == null || curJob.bill == null || curJob.bill.GetStoreMode() == BillStoreModeDefOf.DropOnFloor)
-                {
-                    if (!GenPlace.TryPlaceThing(thingToUpgrade, actor.Position, actor.Map, ThingPlaceMode.Near, null, null, default(Rot4)))
-                    {
-                        UpgradeQualityUtility.LogError(actor, "could not drop recipe product", thingToUpgrade, "near", actor.Position);
-                    }
-                    if (hasUnfinishedThingSelected)
-                    {
-#if DEBUG && DEBUGITEMS
-                        UpgradeQualityUtility.LogMessage("FinishRecipeAndStartStoringProduct", "selecting1");
-#endif
-                        Find.Selector.Select(thingToUpgrade);
-                    }
-                    actor.jobs.EndCurrentJob(JobCondition.Succeeded, true, true);
                     return;
                 }
                 IntVec3 targetCell = IntVec3.Invalid;
@@ -302,7 +288,7 @@ namespace UpgradeQuality.Items
                     if (hasUnfinishedThingSelected)
                     {
 #if DEBUG && DEBUGITEMS
-                        UpgradeQualityUtility.LogMessage("FinishRecipeAndStartStoringProduct", "selecting3");
+                        UpgradeQualityUtility.LogMessage(DebugName, "selecting3");
 #endif
                         Find.Selector.Select(thingToUpgrade);
                     }
@@ -315,13 +301,45 @@ namespace UpgradeQuality.Items
                 if (hasUnfinishedThingSelected)
                 {
 #if DEBUG && DEBUGITEMS
-                    UpgradeQualityUtility.LogMessage("FinishRecipeAndStartStoringProduct", "selecting4");
+                    UpgradeQualityUtility.LogMessage(DebugName, "selecting4");
 #endif
                     Find.Selector.Select(thingToUpgrade);
                 }
                 actor.jobs.EndCurrentJob(JobCondition.Succeeded, true, true);
             };
             return toil;
+        }
+
+        private static bool HandleDropOnFloor(string DebugName, Pawn actor, Job curJob, Thing thingToUpgrade, bool hasUnfinishedThingSelected)
+        {
+            if (curJob == null || curJob.bill == null || curJob.bill.GetStoreMode() == BillStoreModeDefOf.DropOnFloor)
+            {
+                if (!GenPlace.TryPlaceThing(thingToUpgrade, actor.Position, actor.Map, ThingPlaceMode.Near, null, null, default(Rot4)))
+                {
+                    UpgradeQualityUtility.LogError(actor, "could not drop recipe product", thingToUpgrade, "near", actor.Position);
+                }
+                if (hasUnfinishedThingSelected)
+                {
+#if DEBUG && DEBUGITEMS
+                    UpgradeQualityUtility.LogMessage(DebugName, "selecting1");
+#endif
+                    Find.Selector.Select(thingToUpgrade);
+                }
+                actor.jobs.EndCurrentJob(JobCondition.Succeeded, true, true);
+                return true;
+            }
+            return false;
+        }
+
+        private static void HandleArtFromQuality(Pawn actor, Thing thingToUpgrade)
+        {
+            var qComp = thingToUpgrade.TryGetComp<CompQuality>();
+            if (qComp != null && qComp.Quality < QualityCategory.Legendary)
+            {
+                qComp.SetQuality(qComp.Quality + 1, ArtGenerationContext.Colony);
+                var artComp = thingToUpgrade.TryGetComp<CompArt>();
+                artComp?.JustCreatedBy(actor);
+            }
         }
     }
 }

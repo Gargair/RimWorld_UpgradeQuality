@@ -14,7 +14,7 @@ namespace UpgradeQuality.Building
         {
             get
             {
-                return Comp?.DesiredQuality;
+                return this.Comp?.DesiredQuality;
             }
         }
         public List<ThingDefCountQuality> NeededResources { get; set; }
@@ -22,11 +22,11 @@ namespace UpgradeQuality.Building
         {
             get
             {
-                return Comp?.KeepQuality;
+                return this.Comp?.KeepQuality;
             }
         }
 
-        private CompUpgradeQualityBuilding Comp => thingToChange?.GetComp<CompUpgradeQualityBuilding>();
+        private CompUpgradeQualityBuilding Comp => this.thingToChange?.GetComp<CompUpgradeQualityBuilding>();
 
         public override void Notify_KilledLeavingsLeft(List<Thing> leavings)
         {
