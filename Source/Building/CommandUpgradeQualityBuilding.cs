@@ -6,9 +6,9 @@ using Verse;
 
 namespace UpgradeQuality.Building
 {
-    public class Command_UpgradeQuality_Building : Command_Action
+    public class CommandUpgradeQualityBuilding : Command_Action
     {
-        public Command_UpgradeQuality_Building()
+        public CommandUpgradeQualityBuilding()
         {
             icon = ContentFinder<Texture2D>.Get("UpgradeQuality/UI/QualityUp");
             defaultLabel = "UpgQlty.Labels.UpgradeBuilding".Translate();
@@ -21,12 +21,12 @@ namespace UpgradeQuality.Building
 
         private static void ChangeTo(QualityCategory cat, bool keepQuality)
         {
-            List<object> list = Find.Selector.SelectedObjects.FindAll((object o) => typeof(ThingWithComps).IsAssignableFrom(o.GetType()));
+            List<object> list = Find.Selector.SelectedObjects.FindAll((object o) => o is ThingWithComps);
             foreach (object item in list)
             {
                 if (item is ThingWithComps thing)
                 {
-                    Comp_UpgradeQuality_Building upgradeQualityComp = thing.TryGetComp<Comp_UpgradeQuality_Building>();
+                    CompUpgradeQualityBuilding upgradeQualityComp = thing.TryGetComp<CompUpgradeQualityBuilding>();
                     upgradeQualityComp?.SetDesiredQualityTo(cat, keepQuality);
                 }
             }
@@ -34,7 +34,7 @@ namespace UpgradeQuality.Building
 
         private static IEnumerable<FloatMenuOption> GetFloatingOptions()
         {
-            List<object> list = Find.Selector.SelectedObjects.FindAll((object o) => typeof(ThingWithComps).IsAssignableFrom(o.GetType()));
+            List<object> list = Find.Selector.SelectedObjects.FindAll((object o) => o is ThingWithComps);
             QualityCategory lowestQcFound = QualityCategory.Legendary;
             foreach (object item in list)
             {

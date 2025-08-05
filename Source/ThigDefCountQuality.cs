@@ -1,13 +1,13 @@
 ﻿using RimWorld;
 using Verse;
 
-namespace UpgradeQuality.Items
+namespace UpgradeQuality
 {
     public struct ThingDefCountQuality
     {
-        public ThingDef ThingDef;
-        public int Count;
-        public QualityRange Range;
+        public ThingDef ThingDef { get; set; }
+        public int Count { get; set; }
+        public QualityRange Range { get; set; }
 
         public ThingDefCountQuality(ThingDef def, int count, QualityRange qRange)
         {

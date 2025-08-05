@@ -9,7 +9,7 @@ namespace UpgradeQuality.Items
 {
     [HarmonyPatchCategory("UpgradeItems")]
     [HarmonyPatch]
-    public class Toils_Haul_Patch_PlacedThings
+    public static class ToilsHaulPatchPlacedThings
     {
         [HarmonyTargetMethod]
         public static MethodInfo GetMethod()

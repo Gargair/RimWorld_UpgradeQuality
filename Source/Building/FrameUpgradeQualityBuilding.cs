@@ -1,12 +1,11 @@
 ﻿using System.Collections.Generic;
 using RimWorld;
-using UpgradeQuality.Items;
 using Verse;
 using Verse.AI.Group;
 
 namespace UpgradeQuality.Building
 {
-    public class Frame_UpgradeQuality_Building : Frame
+    public class FrameUpgradeQualityBuilding : Frame
     {
         public ThingWithComps thingToChange;
         public QualityCategory generatedForQuality;
@@ -27,7 +26,7 @@ namespace UpgradeQuality.Building
             }
         }
 
-        private Comp_UpgradeQuality_Building Comp => thingToChange?.GetComp<Comp_UpgradeQuality_Building>();
+        private CompUpgradeQualityBuilding Comp => thingToChange?.GetComp<CompUpgradeQualityBuilding>();
 
         public override void Notify_KilledLeavingsLeft(List<Thing> leavings)
         {

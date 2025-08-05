@@ -1,9 +1,9 @@
-﻿using HarmonyLib;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using HarmonyLib;
 using Verse;
 
 namespace UpgradeQuality.Building
@@ -12,12 +12,11 @@ namespace UpgradeQuality.Building
     [HarmonyPatch(typeof(GenSpawn), "SpawningWipes")]
     internal static class ReplaceFrameNoWipe
     {
-        public static void Postfix(BuildableDef newEntDef, BuildableDef oldEntDef, ref bool __result)
+        public static void Postfix(BuildableDef newEntDef, ref bool __result)
         {
             if (newEntDef is ThingDef newThing && FrameUtility.IsUpgradeBuildingFrame(newThing))
             {
                 __result = false;
-                return;
             }
         }
     }

@@ -8,9 +8,9 @@ using Verse.AI;
 
 namespace UpgradeQuality.Items
 {
-    internal class WorkGiver_UpgradeQuality_Item : WorkGiver_DoBill
+    internal class WorkGiverUpgradeQualityItem : WorkGiver_DoBill
     {
-        public WorkGiver_UpgradeQuality_Item()
+        public WorkGiverUpgradeQualityItem()
         {
             this.chosenIngThings = new List<ThingCount>();
         }
@@ -187,7 +187,7 @@ namespace UpgradeQuality.Items
             {
                 return new List<Thing>();
             }
-            RegionProcessor_ThingToUpgrade proc = new RegionProcessor_ThingToUpgrade(pawn, searchRadius, startCell, itemFilter);
+            RegionProcessorThingToUpgrade proc = new RegionProcessorThingToUpgrade(pawn, searchRadius, startCell, itemFilter);
             RegionTraverser.BreadthFirstTraverse(startRegion, proc);
             proc.Sort();
             return proc.ValidItems;

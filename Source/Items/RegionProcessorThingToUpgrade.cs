@@ -7,7 +7,7 @@ using Verse.AI;
 
 namespace UpgradeQuality.Items
 {
-    public class RegionProcessor_ThingToUpgrade : RegionProcessorDelegateCache
+    public class RegionProcessorThingToUpgrade : RegionProcessorDelegateCache
     {
         private readonly Pawn worker;
         private readonly double searchRadius;
@@ -17,7 +17,7 @@ namespace UpgradeQuality.Items
 
         public List<Thing> ValidItems = new List<Thing>();
 
-        public RegionProcessor_ThingToUpgrade(Pawn worker, double searchRadius, IntVec3 anchorCell, ThingFilter itemFilter)
+        public RegionProcessorThingToUpgrade(Pawn worker, double searchRadius, IntVec3 anchorCell, ThingFilter itemFilter)
         {
             this.worker = worker;
             this.searchRadius = searchRadius;

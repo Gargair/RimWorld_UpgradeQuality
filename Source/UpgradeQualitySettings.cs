@@ -1,5 +1,5 @@
-﻿using RimWorld;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
+using RimWorld;
 using UnityEngine;
 using Verse;
 
@@ -66,45 +66,45 @@ namespace UpgradeQuality
             BuildMaterialSlider(list, ref Factor_Good_Excellent, ref GoodBuffer, goodString, excellentString);
             BuildMaterialSlider(list, ref Factor_Excellent_Masterwork, ref ExcellentBuffer, excellentString, masterworkString);
             BuildMaterialSlider(list, ref Factor_Masterwork_Legendary, ref MasterworkBuffer, masterworkString, legendaryString);
-            BuildCheckBox(list, ref IsKeepOptionEnabled, "UpgQlty.Labels.Settings.IsKeepOptionEnabled", "UpgQlty.Tooltips.Settings.IsKeepOptionEnabled");
-            BuildCheckBox(list, ref LimitItemQualityToWorkbench, "UpgQlty.Labels.Settings.LimitItemQualityToWorkbench", "UpgQlty.Tooltips.Settings.LimitItemQualityToWorkbench");
+            BuildCheckBox(list, ref IsKeepOptionEnabled, ("UpgQlty.Labels.Settings.IsKeepOptionEnabled", "UpgQlty.Tooltips.Settings.IsKeepOptionEnabled"));
+            BuildCheckBox(list, ref LimitItemQualityToWorkbench, ("UpgQlty.Labels.Settings.LimitItemQualityToWorkbench", "UpgQlty.Tooltips.Settings.LimitItemQualityToWorkbench"));
             BuildQualitySelector(list);
 
             list.End();
             Widgets.EndScrollView();
         }
 
-        private void BuildSlider(Listing_Standard listing_Standard, ref float valueRef, ref string inputBuffer, float minValue, float maxValue, TaggedString labelText, TaggedString tooltipText, bool withGap)
+        private static void BuildSlider(Listing_Standard listing_Standard, ref float valueRef, ref string inputBuffer, (float minValue, float maxValue) values, (TaggedString labelText, TaggedString tooltipText) text, bool withGap)
         {
             var contentRect = listing_Standard.GetRect(Text.LineHeight + 70f);
             var topRect = contentRect.TopPartPixels(Text.LineHeight);
             var labelRect = topRect.LeftHalf();
             var textInput = topRect.RightHalf();
             var sliderRect = contentRect.BottomPartPixels(50f);
-            Widgets.Label(labelRect, labelText);
-            Widgets.TextFieldNumeric(textInput, ref valueRef, ref inputBuffer, minValue, maxValue);
-            Widgets.HorizontalSlider(sliderRect, ref valueRef, new FloatRange(minValue, maxValue));
-            TooltipHandler.TipRegion(labelRect, tooltipText);
+            Widgets.Label(labelRect, text.labelText);
+            Widgets.TextFieldNumeric(textInput, ref valueRef, ref inputBuffer, values.minValue, values.maxValue);
+            Widgets.HorizontalSlider(sliderRect, ref valueRef, new FloatRange(values.minValue, values.maxValue));
+            TooltipHandler.TipRegion(labelRect, text.tooltipText);
             if (withGap)
             {
                 listing_Standard.Gap(1f);
             }
         }
 
-        private void BuildMaterialSlider(Listing_Standard listing_Standard, ref float matRef, ref string intBuf, string catFromText, string catToText, bool withGap = true)
+        private static void BuildMaterialSlider(Listing_Standard listing_Standard, ref float matRef, ref string intBuf, string catFromText, string catToText, bool withGap = true)
         {
             var labelText = "UpgQlty.Labels.Settings.MaterialsNeededFor".Translate(catFromText, catToText, matRef.ToString());
             var tooltiptext = "UpgQlty.Tooltips.Settings.MaterialsNeededTooltip".Translate();
-            BuildSlider(listing_Standard, ref matRef, ref intBuf, 0.01f, 20f, labelText, tooltiptext, withGap);
+            BuildSlider(listing_Standard, ref matRef, ref intBuf, (0.01f, 20f), (labelText, tooltiptext), withGap);
         }
 
-        private void BuildCheckBox(Listing_Standard listing_Standard, ref bool option, string labelKey, string tooltipKey)
+        private static void BuildCheckBox(Listing_Standard listing_Standard, ref bool option, (string labelKey, string tooltipKey) keys)
         {
             var contentRect = listing_Standard.GetRect(Text.LineHeight);
             var labelRect = contentRect.LeftHalf();
             var checkBox = contentRect.RightHalf();
-            Widgets.Label(labelRect, labelKey.Translate());
-            TooltipHandler.TipRegion(labelRect, tooltipKey.Translate());
+            Widgets.Label(labelRect, keys.labelKey.Translate());
+            TooltipHandler.TipRegion(labelRect, keys.tooltipKey.Translate());
             Widgets.Checkbox(checkBox.position, ref option, Text.LineHeight);
         }
 
@@ -124,7 +124,8 @@ namespace UpgradeQuality
                 // Add each quality level as an option
                 foreach (QualityCategory quality in QualityUtility.AllQualityCategories)
                 {
-                    options.Add(new FloatMenuOption(quality.GetLabel(), () => {
+                    options.Add(new FloatMenuOption(quality.GetLabel(), () =>
+                    {
                         MaxQuality = quality;
                     }));
                 }

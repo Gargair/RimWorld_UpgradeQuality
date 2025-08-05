@@ -1,19 +1,17 @@
-﻿using HarmonyLib;
-using RimWorld;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
-using System.Runtime.CompilerServices;
-using System.Text;
+using HarmonyLib;
+using RimWorld;
 using Verse;
 
 namespace UpgradeQuality.Building
 {
     [HarmonyPatchCategory("UpgradeBuildings")]
     [HarmonyPatch(typeof(Frame), nameof(Frame.CompleteConstruction))]
-    public class Frame_Patch_CompleteConstruction
+    public static class FramePatchCompleteConstruction
     {
-        static bool Prefix(Frame __instance, Pawn worker)
+        public static bool Prefix(Frame __instance, Pawn worker)
         {
 #if DEBUG && DEBUGBUILDINGS
             UpgradeQualityUtility.LogMessage("CompleteConstruction Prefix");
@@ -30,13 +28,11 @@ namespace UpgradeQuality.Building
         }
     }
 
-#if PatchCategory
     [HarmonyPatchCategory("UpgradeBuildings")]
-#endif
     [HarmonyPatch(typeof(Frame), nameof(Frame.FailConstruction))]
-    public class Frame_Patch_FailConstruction
+    public static class FramePatchFailConstruction
     {
-        static bool Prefix(Frame __instance, Pawn worker)
+        public static bool Prefix(Frame __instance, Pawn worker)
         {
 #if DEBUG && DEBUGBUILDINGS
             UpgradeQualityUtility.LogMessage("FailConstruction Prefix");
@@ -55,9 +51,9 @@ namespace UpgradeQuality.Building
 
     [HarmonyPatchCategory("UpgradeBuildings")]
     [HarmonyPatch(typeof(Frame), nameof(Frame.TotalMaterialCost))]
-    public class Frame_Patch_TotalMaterialCost
+    public static class FramePatchTotalMaterialCost
     {
-        static bool Prefix(Frame __instance, ref List<ThingDefCountClass> __result)
+        public static bool Prefix(Frame __instance, ref List<ThingDefCountClass> __result)
         {
             if (FrameUtility.IsUpgradeBuildingFrame(__instance, out var frame))
             {
@@ -70,7 +66,7 @@ namespace UpgradeQuality.Building
 
     [HarmonyPatchCategory("UpgradeBuildings")]
     [HarmonyPatch(typeof(Frame), nameof(Frame.GetInspectString))]
-    public class Frame_GetInspectString
+    public static class FrameGetInspectString
     {
         public static IEnumerable<CodeInstruction> Transpiler(IEnumerable<CodeInstruction> instructions)
         {
@@ -127,7 +123,7 @@ namespace UpgradeQuality.Building
 
     [HarmonyPatchCategory("UpgradeBuildings")]
     [HarmonyPatch(typeof(Frame), nameof(Frame.WorkToBuild), MethodType.Getter)]
-    internal static class Frame_WorkToBuild
+    public static class FrameWorkToBuild
     {
         public static void Postfix(Frame __instance, ref float __result)
         {

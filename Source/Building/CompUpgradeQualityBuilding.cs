@@ -1,11 +1,10 @@
 ﻿using System.Collections.Generic;
 using RimWorld;
-using UpgradeQuality.Items;
 using Verse;
 
 namespace UpgradeQuality.Building
 {
-    public class Comp_UpgradeQuality_Building : ThingComp
+    public class CompUpgradeQualityBuilding : ThingComp
     {
         private QualityCategory _desiredQuality;
         public QualityCategory DesiredQuality
@@ -14,14 +13,20 @@ namespace UpgradeQuality.Building
             set => _desiredQuality = value;
         }
         private bool _keepQuality;
-        public bool KeepQuality { get => _keepQuality; set => _keepQuality = value; }
-
-        public CompProperties_UpgradeQuality_Building Props => (CompProperties_UpgradeQuality_Building)props;
-        private Frame_UpgradeQuality_Building _placedFrame;
-        public Frame_UpgradeQuality_Building PlacedFrame { get => _placedFrame; set => _placedFrame = value; }
-
+        public bool KeepQuality
+        {
+            get => _keepQuality;
+            set => _keepQuality = value;
+        }
+        public CompPropertiesUpgradeQualityBuilding Props => (CompPropertiesUpgradeQualityBuilding)props;
+        private FrameUpgradeQualityBuilding _placedFrame;
+        public FrameUpgradeQualityBuilding PlacedFrame
+        {
+            get => _placedFrame;
+            set => _placedFrame = value;
+        }
         private DesignationManager DesignationManager => parent?.Map?.designationManager;
-        private bool HasUpgradeDesignation => UpgradeDesignation != null;
+        private bool HasUpgradeDesignation => this.UpgradeDesignation != null;
         private Designation UpgradeDesignation => DesignationManager?.DesignationOn(parent, UpgradeQualityDefOf.IncreaseQuality_Building);
         private bool needDesignationAfterSpawn = false;
         public bool SkipRemoveDesignation { get; set; } = false;
@@ -37,9 +42,9 @@ namespace UpgradeQuality.Building
                 return _compQuality;
             }
         }
-        private readonly GameComponent_ActiveQualityCompTracker tracker = Current.Game.GetComponent<GameComponent_ActiveQualityCompTracker>();
+        private readonly GameComponentActiveQualityCompTracker tracker = Current.Game.GetComponent<GameComponentActiveQualityCompTracker>();
 
-        public Comp_UpgradeQuality_Building() { }
+        public CompUpgradeQualityBuilding() { }
 
         public override IEnumerable<Gizmo> CompGetGizmosExtra()
         {
@@ -51,7 +56,7 @@ namespace UpgradeQuality.Building
 
         private static Command CreateChangeBuildingGizmo()
         {
-            return new Command_UpgradeQuality_Building();
+            return new CommandUpgradeQualityBuilding();
         }
 
         public void SetDesiredQualityTo(QualityCategory desiredQuality, bool keepQuality)
@@ -99,7 +104,7 @@ namespace UpgradeQuality.Building
 #if DEBUG && DEBUGBUILDINGS
             UpgradeQualityUtility.LogMessage("Creating Frame");
 #endif
-            Frame_UpgradeQuality_Building frame = new Frame_UpgradeQuality_Building
+            FrameUpgradeQualityBuilding frame = new FrameUpgradeQualityBuilding
             {
                 def = FrameUtility.GetFrameDefForThingDef(parent.def)
             };
@@ -114,7 +119,7 @@ namespace UpgradeQuality.Building
 #if DEBUG && DEBUGBUILDINGS
             UpgradeQualityUtility.LogMessage("Placing Frame");
 #endif
-            PlacedFrame = (Frame_UpgradeQuality_Building)GenSpawn.Spawn(frame, parent.Position, parent.Map, parent.Rotation);
+            PlacedFrame = (FrameUpgradeQualityBuilding)GenSpawn.Spawn(frame, parent.Position, parent.Map, parent.Rotation);
         }
 
         public void CancelUpgrade()
@@ -162,7 +167,7 @@ namespace UpgradeQuality.Building
         {
             base.PostExposeData();
             Scribe_Values.Look(ref _desiredQuality, "UpgQlty.desiredQuality", QualityCategory.Awful, false);
-            if ((Scribe.mode == LoadSaveMode.Saving && PlacedFrame != null) || Scribe.mode != LoadSaveMode.Saving)
+            if ((Scribe.mode == LoadSaveMode.Saving && _placedFrame != null) || Scribe.mode != LoadSaveMode.Saving)
             {
                 Scribe_References.Look(ref _placedFrame, "UpgQlty.placedFrame");
             }
@@ -185,7 +190,7 @@ namespace UpgradeQuality.Building
 
         public bool IsStillActive()
         {
-            if (HasUpgradeDesignation)
+            if (this.HasUpgradeDesignation)
             {
                 if (CompQuality != null && PlacedFrame != null && CompQuality.Quality != PlacedFrame.generatedForQuality)
                 {

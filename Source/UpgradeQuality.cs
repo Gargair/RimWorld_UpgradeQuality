@@ -5,7 +5,8 @@ namespace UpgradeQuality
 {
     public class UpgradeQuality : Mod
     {
-        public UpgradeQuality(ModContentPack content) :base(content) {
+        public UpgradeQuality(ModContentPack content) : base(content)
+        {
             Settings = GetSettings<UpgradeQualitySettings>();
         }
 
@@ -19,6 +20,6 @@ namespace UpgradeQuality
             Settings.DoWindowContents(inRect);
         }
 
-        public static UpgradeQualitySettings Settings;
+        public static UpgradeQualitySettings Settings { get; set; }
     }
 }

@@ -17,7 +17,7 @@ namespace UpgradeQuality
     {
         static UpgradeQualityUtility()
         {
-            var upgradeBuildingCompProps = new CompProperties_UpgradeQuality_Building();
+            var upgradeBuildingCompProps = new CompPropertiesUpgradeQualityBuilding();
             foreach (var thingDef in DefDatabase<ThingDef>.AllDefs.Where(thingDef => thingDef.HasComp(typeof(CompQuality))))
             {
                 if (thingDef.building != null || thingDef.Minifiable)
@@ -165,6 +165,7 @@ namespace UpgradeQuality
         public static void ClearCachedBaseCosts()
         {
             CachedBaseCosts.Clear();
+            RecipesForThingDef.Clear();
         }
 
         public static float GetMultiplier(QualityCategory fromQuality)
@@ -194,90 +195,98 @@ namespace UpgradeQuality
 
         public static bool CanBeUpgraded(ThingWithComps thing)
         {
-            thing = thing.GetInnerIfMinified() as ThingWithComps;
-            if (thing.Faction == Faction.OfPlayer && thing.TryGetQuality(out var quality))
+            thing = thing?.GetInnerIfMinified() as ThingWithComps;
+            if (thing == null || thing.Faction != Faction.OfPlayer)
+            {
+                return false;
+            }
+            if (!thing.TryGetQuality(out var quality))
+            {
+                return false;
+            }
+
+#if DEBUG
+            if (Find.Selector.IsSelected(thing))
+            {
+                UpgradeQualityUtility.LogMessage("Is Player Faction with Quality");
+                UpgradeQualityUtility.LogMessage("Is Quality:", quality);
+                UpgradeQualityUtility.LogMessage("IsKeepOptionEnabled:", UpgradeQuality.Settings.IsKeepOptionEnabled);
+            }
+#endif
+
+            if (!UpgradeQuality.Settings.IsKeepOptionEnabled && quality >= UpgradeQuality.Settings.MaxQuality)
+            {
+                return false;
+            }
+
+            if (thing is Verse.Building building)
             {
 #if DEBUG
                 if (Find.Selector.IsSelected(thing))
                 {
-                    UpgradeQualityUtility.LogMessage("Is Player Faction with Quality");
-                    UpgradeQualityUtility.LogMessage("Is Quality:", quality);
-                    UpgradeQualityUtility.LogMessage("IsKeepOptionEnabled:", UpgradeQuality.Settings.IsKeepOptionEnabled);
+                    UpgradeQualityUtility.LogMessage("Is building");
                 }
 #endif
-                if (UpgradeQuality.Settings.IsKeepOptionEnabled || quality < UpgradeQuality.Settings.MaxQuality)
+                if (BuildCopyCommandUtility.FindAllowedDesignator(building.def, true) != null)
                 {
-                    if (thing is Verse.Building building)
+#if DEBUG
+                    if (Find.Selector.IsSelected(thing))
                     {
-#if DEBUG
-                        if (Find.Selector.IsSelected(thing))
-                        {
-                            UpgradeQualityUtility.LogMessage("Is building");
-                        }
-#endif
-                        if (BuildCopyCommandUtility.FindAllowedDesignator(building.def, true) != null)
-                        {
-#if DEBUG
-                            if (Find.Selector.IsSelected(thing))
-                            {
-                                UpgradeQualityUtility.LogMessage("Is building with allowed designator");
-                            }
-#endif
-                            return true;
-                        }
-
+                        UpgradeQualityUtility.LogMessage("Is building with allowed designator");
                     }
-                    else
-                    {
-#if DEBUG
-                        if (Find.Selector.IsSelected(thing))
-                        {
-                            UpgradeQualityUtility.LogMessage("No building");
-                        }
 #endif
-                    }
+                    return true;
+                }
 
-                    if (!RecipesForThingDef.ContainsKey(thing.def))
-                    {
+            }
 #if DEBUG
-                        if (Find.Selector.IsSelected(thing))
-                        {
-                            UpgradeQualityUtility.LogMessage("building recipe cache");
-                        }
+            else
+            {
+                if (Find.Selector.IsSelected(thing))
+                {
+                    UpgradeQualityUtility.LogMessage("No building");
+                }
+            }
 #endif
-                        List<RecipeDef> recipes = new List<RecipeDef>();
-                        List<RecipeDef> allRecipes = DefDatabase<RecipeDef>.AllDefsListForReading;
-                        for (int j = 0; j < allRecipes.Count; j++)
-                        {
-                            if (allRecipes[j].ProducedThingDef == thing.def)
-                            {
-                                recipes.Add(allRecipes[j]);
-                            }
-                        }
-                        RecipesForThingDef.Add(thing.def, recipes);
-                    }
 
-                    var thingRecipes = RecipesForThingDef[thing.def];
+            if (!RecipesForThingDef.ContainsKey(thing.def))
+            {
+#if DEBUG
+                if (Find.Selector.IsSelected(thing))
+                {
+                    UpgradeQualityUtility.LogMessage("building recipe cache");
+                }
+#endif
+                List<RecipeDef> recipes = DefDatabase<RecipeDef>.AllDefsListForReading.Where(recipe => recipe.ProducedThingDef == thing.def).ToList();
+                RecipesForThingDef.Add(thing.def, recipes);
+            }
+
+            var thingRecipes = RecipesForThingDef[thing.def];
 
 #if DEBUG
-                    if (Find.Selector.IsSelected(thing) && thingRecipes.Count == 0)
-                    {
-                        UpgradeQualityUtility.LogMessage("No recipes");
-                    }
+            if (Find.Selector.IsSelected(thing) && thingRecipes.Count == 0)
+            {
+                UpgradeQualityUtility.LogMessage("No recipes");
+            }
 #endif
-                    foreach (var recipe in thingRecipes)
-                    {
-                        if (recipe.AvailableNow)
-                        {
+
+            // If there are no recipes for the thing, it can be upgraded
+            if (thingRecipes.Count == 0)
+            {
+                return true;
+            }
+
+            foreach (var recipe in thingRecipes)
+            {
+                if (recipe.AvailableNow)
+                {
 #if DEBUG
-                            if (Find.Selector.IsSelected(thing))
-                            {
-                                UpgradeQualityUtility.LogMessage("Has recipe available now");
-                            }
-#endif
-                            return true;
-                        }
+                    if (Find.Selector.IsSelected(thing))
+                    {
+                        UpgradeQualityUtility.LogMessage("Has recipe available now");
                     }
+#endif
+                    return true;
                 }
             }
             return false;

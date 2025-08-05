@@ -6,7 +6,7 @@ namespace UpgradeQuality.Building
 {
     [HarmonyPatchCategory("UpgradeBuildings")]
     [HarmonyPatch(typeof(GenConstruct), "BlocksConstruction")]
-    internal class ReplaceFrameNoBlock
+    internal static class ReplaceFrameNoBlock
     {
         public static bool Prefix(Thing constructible, Thing t, ref bool __result)
         {

@@ -3,11 +3,11 @@ using Verse;
 
 namespace UpgradeQuality.Building
 {
-    public class GameComponent_ActiveQualityCompTracker : GameComponent
+    public class GameComponentActiveQualityCompTracker : GameComponent
     {
-        private readonly List<Comp_UpgradeQuality_Building> activeQualityComps = new List<Comp_UpgradeQuality_Building>();
+        private readonly List<CompUpgradeQualityBuilding> activeQualityComps = new List<CompUpgradeQualityBuilding>();
         private readonly Game activeGame;
-        public GameComponent_ActiveQualityCompTracker(Game game) { this.activeGame = game; }
+        public GameComponentActiveQualityCompTracker(Game game) { this.activeGame = game; }
 
         public override void LoadedGame()
         {
@@ -16,7 +16,7 @@ namespace UpgradeQuality.Building
             {
                 foreach (var thing in map.listerBuildings.allBuildingsColonist)
                 {
-                    if (thing.TryGetComp<Comp_UpgradeQuality_Building>(out var comp))
+                    if (thing.TryGetComp<CompUpgradeQualityBuilding>(out var comp))
                     {
                         this.AddComponent(comp);
                     }
@@ -41,7 +41,7 @@ namespace UpgradeQuality.Building
             }
         }
 
-        public void AddComponent(Comp_UpgradeQuality_Building comp)
+        public void AddComponent(CompUpgradeQualityBuilding comp)
         {
             if (!this.activeQualityComps.Contains(comp) && comp.IsStillActive())
             {
@@ -49,7 +49,7 @@ namespace UpgradeQuality.Building
             }
         }
 
-        public void RemoveComponent(Comp_UpgradeQuality_Building comp)
+        public void RemoveComponent(CompUpgradeQualityBuilding comp)
         {
             this.activeQualityComps.Remove(comp);
         }

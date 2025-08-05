@@ -6,7 +6,7 @@ using Verse.AI;
 
 namespace UpgradeQuality.Items
 {
-    public class JobDriver_UpgradeQuality_Item : JobDriver_DoBill
+    public class JobDriverUpgradeQualityItem : JobDriver_DoBill
     {
         private Thing cachedThingToUpgrade;
 
@@ -111,7 +111,6 @@ namespace UpgradeQuality.Items
             yield return FinishRecipeAndStartStoringProduct(TargetIndex.None);
             yield return Toils_Haul.CarryHauledThingToCell(TargetIndex.B);
             yield return Toils_Haul.PlaceHauledThingInCell(TargetIndex.B, Toils_Haul.DropCarriedThing(), true, true);
-            yield break;
         }
 
         private static Toil MakeUnfinishedThingIfNeeded(Thing thingToUpgrade)
