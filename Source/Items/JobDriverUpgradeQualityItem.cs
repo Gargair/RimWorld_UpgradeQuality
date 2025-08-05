@@ -92,7 +92,7 @@ namespace UpgradeQuality.Items
                 float workLeft = ((JobDriver_DoBill)actor.jobs.curDriver).workLeft;
                 if (thing is UnfinishedUpgrade unfinishedUpgrade)
                 {
-                    var thingToUpgrade = unfinishedUpgrade.thingToUpgrade;
+                    var thingToUpgrade = unfinishedUpgrade.ThingToUpgrade;
                     float multiplier = 1f;
                     if (thingToUpgrade.TryGetComp<CompQuality>(out var qualityComp))
                     {
@@ -166,7 +166,7 @@ namespace UpgradeQuality.Items
                 unfinishedThing.BoundBill = (Bill_ProductionWithUft)curJob.bill;
                 unfinishedThing.ingredients = list.Where(t => t != thingToUpgrade).ToList();
                 unfinishedThing.workLeft = thingToUpgrade.def.GetStatValueAbstract(StatDefOf.WorkToMake, thingToUpgrade.Stuff) * multiplier;
-                unfinishedThing.thingToUpgrade = thingToUpgrade;
+                unfinishedThing.ThingToUpgrade = thingToUpgrade;
 #if DEBUG && DEBUGITEMS
                 UpgradeQualityUtility.LogMessage("Spawning unfinished thing");
 #endif
@@ -249,7 +249,7 @@ namespace UpgradeQuality.Items
                 Pawn actor = toil.actor;
                 Job curJob = actor.jobs.curJob;
                 UnfinishedUpgrade unfinishedThing = curJob.GetTarget(TargetIndex.B).Thing as UnfinishedUpgrade;
-                var thingToUpgrade = unfinishedThing.thingToUpgrade;
+                var thingToUpgrade = unfinishedThing.ThingToUpgrade;
                 bool hasUnfinishedThingSelected = Find.Selector.IsSelected(unfinishedThing);
                 List<Thing> ingredients = CalculateIngredients(curJob, actor);
 

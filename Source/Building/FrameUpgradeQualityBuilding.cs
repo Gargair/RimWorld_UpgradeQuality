@@ -7,8 +7,10 @@ namespace UpgradeQuality.Building
 {
     public class FrameUpgradeQualityBuilding : Frame
     {
-        public ThingWithComps thingToChange;
-        public QualityCategory generatedForQuality;
+        private ThingWithComps _thingToChange;
+        public ThingWithComps ThingToChange { get => this._thingToChange; set => this._thingToChange = value; }
+        private QualityCategory _generatedForQuality;
+        public QualityCategory GeneratedForQuality { get => this._generatedForQuality; set => this._generatedForQuality = value; }
 
         public QualityCategory? DesiredQuality
         {
@@ -26,7 +28,7 @@ namespace UpgradeQuality.Building
             }
         }
 
-        private CompUpgradeQualityBuilding Comp => this.thingToChange?.GetComp<CompUpgradeQualityBuilding>();
+        private CompUpgradeQualityBuilding Comp => this.ThingToChange?.GetComp<CompUpgradeQualityBuilding>();
 
         public override void Notify_KilledLeavingsLeft(List<Thing> leavings)
         {
@@ -37,8 +39,8 @@ namespace UpgradeQuality.Building
         public override void ExposeData()
         {
             base.ExposeData();
-            Scribe_References.Look(ref thingToChange, "UpgQlty.thingToChange");
-            Scribe_Values.Look(ref generatedForQuality, "UpgQlty.generatedForQuality", QualityCategory.Awful, false);
+            Scribe_References.Look(ref _thingToChange, "UpgQlty.thingToChange");
+            Scribe_Values.Look(ref _generatedForQuality, "UpgQlty.generatedForQuality", QualityCategory.Awful, false);
         }
 
         public void CustomCompleteConstruction(Pawn worker)
@@ -48,7 +50,7 @@ namespace UpgradeQuality.Building
 #endif
             this.resourceContainer.ClearAndDestroyContents(DestroyMode.Vanish);
 
-            var qualityComp = thingToChange.GetComp<CompQuality>();
+            var qualityComp = ThingToChange.GetComp<CompQuality>();
             var desiredQuality = DesiredQuality ?? QualityCategory.Awful;
             var keepQuality = KeepQuality ?? false;
             var comp = Comp;
@@ -57,7 +59,7 @@ namespace UpgradeQuality.Building
             {
                 qualityComp.SetQuality(qualityComp.Quality + 1, ArtGenerationContext.Colony);
             }
-            if (thingToChange.TryGetComp<CompArt>(out CompArt compArt))
+            if (ThingToChange.TryGetComp<CompArt>(out CompArt compArt))
             {
                 compArt.JustCreatedBy(worker);
             }
@@ -70,12 +72,12 @@ namespace UpgradeQuality.Building
             comp?.SetDesiredQualityTo(desiredQuality, keepQuality);
 
             worker.records.Increment(RecordDefOf.ThingsConstructed);
-            if (thingToChange != null && thingToChange.GetStatValue(StatDefOf.WorkToBuild, true, -1) >= 9500f)
+            if (ThingToChange != null && ThingToChange.GetStatValue(StatDefOf.WorkToBuild, true, -1) >= 9500f)
             {
                 TaleRecorder.RecordTale(TaleDefOf.CompletedLongConstructionProject, new object[]
                 {
                     worker,
-                    thingToChange.def
+                    ThingToChange.def
                 });
             }
         }

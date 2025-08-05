@@ -112,9 +112,9 @@ namespace UpgradeQuality.Building
             frame.PostMake();
             frame.PostPostMake();
             frame.StyleSourcePrecept = parent.StyleSourcePrecept;
-            frame.thingToChange = parent;
+            frame.ThingToChange = parent;
             frame.SetFactionDirect(parent.Faction);
-            frame.generatedForQuality = CompQuality.Quality;
+            frame.GeneratedForQuality = CompQuality.Quality;
             frame.NeededResources = InitializeResources();
 #if DEBUG && DEBUGBUILDINGS
             UpgradeQualityUtility.LogMessage("Placing Frame");
@@ -192,7 +192,7 @@ namespace UpgradeQuality.Building
         {
             if (this.HasUpgradeDesignation)
             {
-                if (CompQuality != null && PlacedFrame != null && CompQuality.Quality != PlacedFrame.generatedForQuality)
+                if (CompQuality != null && PlacedFrame != null && CompQuality.Quality != PlacedFrame.GeneratedForQuality)
                 {
 #if DEBUG && DEBUGBUILDINGS
                     UpgradeQualityUtility.LogMessage("Frame generated for different quality!");

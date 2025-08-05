@@ -4,29 +4,30 @@ namespace UpgradeQuality.Items
 {
     public class UnfinishedUpgrade : UnfinishedThing
     {
-        public Thing thingToUpgrade;
+        private Thing _thingToUpgrade;
+        public Thing ThingToUpgrade { get => this._thingToUpgrade; set => this._thingToUpgrade = value; }
 
-        public override string DescriptionFlavor => thingToUpgrade.DescriptionFlavor;
+        public override string DescriptionFlavor => ThingToUpgrade.DescriptionFlavor;
 
         public override void ExposeData()
         {
             base.ExposeData();
-            Scribe_Deep.Look(ref thingToUpgrade, "thingToUpgrade");
+            Scribe_Deep.Look(ref _thingToUpgrade, "thingToUpgrade");
         }
 
         public override string LabelNoCount
         {
             get
             {
-                return "UnfinishedItem".Translate(this.thingToUpgrade.LabelNoCount);
+                return "UnfinishedItem".Translate(this.ThingToUpgrade.LabelNoCount);
             }
         }
 
         public override void Destroy(DestroyMode mode = DestroyMode.Vanish)
         {
-            if (mode == DestroyMode.Cancel && this.thingToUpgrade != null)
+            if (mode == DestroyMode.Cancel && this.ThingToUpgrade != null)
             {
-                GenPlace.TryPlaceThing(this.thingToUpgrade, base.Position, base.Map, ThingPlaceMode.Near);
+                GenPlace.TryPlaceThing(this.ThingToUpgrade, base.Position, base.Map, ThingPlaceMode.Near);
             }
 
             base.Destroy(mode);

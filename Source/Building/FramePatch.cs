@@ -133,7 +133,7 @@ namespace UpgradeQuality.Building
                 {
                     __result = __instance.def.entityDefToBuild.GetStatValueAbstract(StatDefOf.WorkToMake, __instance.Stuff);
                 }
-                if (frame.thingToChange.TryGetComp<CompQuality>(out var qualityComp))
+                if (frame.ThingToChange.TryGetComp<CompQuality>(out var qualityComp))
                 {
                     __result *= UpgradeQualityUtility.GetMultiplier(qualityComp.Quality);
                 }

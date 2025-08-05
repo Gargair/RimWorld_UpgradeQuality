@@ -1,6 +1,6 @@
-﻿using RimWorld;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
+using RimWorld;
 using UnityEngine;
 using Verse;
 
@@ -43,15 +43,7 @@ namespace UpgradeQuality.Building
                     lowestQcFound = itemQc;
                 }
             }
-            List<QualityCategory> RenderQualityCategories = new List<QualityCategory>();
-            var allQualities = QualityUtility.AllQualityCategories.ListFullCopy();
-            foreach (var q in allQualities)
-            {
-                if (q <= UpgradeQuality.Settings.MaxQuality)
-                {
-                    RenderQualityCategories.Add(q);
-                }
-            }
+            List<QualityCategory> RenderQualityCategories = QualityUtility.AllQualityCategories.ListFullCopy().Where(q => q <= UpgradeQuality.Settings.MaxQuality).ToList();
             RenderQualityCategories.Reverse();
             foreach (var cat in RenderQualityCategories)
             {
