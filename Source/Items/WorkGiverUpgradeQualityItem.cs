@@ -100,7 +100,7 @@ namespace UpgradeQuality.Items
                 UpgradeQualityUtility.LogMessage("Checking bill", bill.recipe.defName, "shouldSkip:", shouldSkip);
 #endif
                 if (shouldSkip) continue;
-                
+
                 if (!bill.recipe.PawnSatisfiesSkillRequirements(pawn))
                 {
                     JobFailReason.Is("MissingSkill".Translate(), null);
@@ -211,54 +211,22 @@ namespace UpgradeQuality.Items
             foreach (ThingDefCountQuality ingredientToFind in neededIngreds)
             {
                 bool foundIngredient = false;
-                for (int i = 0; i < AvailableCounts.Count; i++)
+                float availableIngredientCount = AvailableCounts[ingredientToFind.ThingDef];
+                if (availableIngredientCount < ingredientToFind.Count)
                 {
-                    float remainingIngredientCount = ingredientToFind.Count;
-                    bool availableIsIngredient = remainingIngredientCount <= AvailableCounts.GetCount(i) && ingredientToFind.ThingDef == AvailableCounts.GetDef(i);
-                    if (availableIsIngredient)
+                    return false;
+                }
+
+                foreach (Thing thing in availableThings)
+                {
+                    if (thing == thingToIgnore || thing.def != ingredientToFind.ThingDef)
                     {
-                        foreach (Thing thing in availableThings)
-                        {
-                            if (thing == thingToIgnore)
-                            {
-                                continue;
-                            }
-                            bool thingIsIngredientNotUsed = thing.def == AvailableCounts.GetDef(i) && !AssignedThings.Contains(thing);
-                            if (thingIsIngredientNotUsed)
-                            {
-                                var shouldAdd = false;
-                                if (thing.TryGetQuality(out QualityCategory qCat))
-                                {
-                                    if (ingredientToFind.Range.Includes(qCat))
-                                    {
-                                        shouldAdd = true;
-                                    }
-                                }
-                                else if (ingredientToFind.Range == QualityRange.All)
-                                {
-                                    shouldAdd = true;
-                                }
-                                if (shouldAdd)
-                                {
-                                    int usedCount = Mathf.Min(Mathf.FloorToInt(remainingIngredientCount), thing.stackCount);
-                                    ThingCountUtility.AddToList(chosen, thing, usedCount);
-                                    remainingIngredientCount -= usedCount;
-                                    AssignedThings.Add(thing);
-                                    bool ingredientFullyFound = remainingIngredientCount < 0.001f;
-                                    if (ingredientFullyFound)
-                                    {
-                                        foundIngredient = true;
-                                        float remainingAvailableCount = AvailableCounts.GetCount(i) - ingredientToFind.Count;
-                                        AvailableCounts.SetCount(i, remainingAvailableCount);
-                                        break;
-                                    }
-                                }
-                            }
-                        }
-                        if (foundIngredient)
-                        {
-                            break;
-                        }
+                        continue;
+                    }
+                    foundIngredient = CheckAndAddNeededIngredient(chosen, AvailableCounts, AssignedThings, ingredientToFind, thing);
+                    if (foundIngredient)
+                    {
+                        break;
                     }
                 }
                 if (!foundIngredient)
@@ -267,6 +235,39 @@ namespace UpgradeQuality.Items
                 }
             }
             return true;
+        }
+
+        private static bool CheckAndAddNeededIngredient(List<ThingCount> chosen, DefCountList AvailableCounts, HashSet<Thing> AssignedThings, ThingDefCountQuality ingredientToFind, Thing thing)
+        {
+            bool thingIsIngredientNotUsed = !AssignedThings.Contains(thing);
+            if (thingIsIngredientNotUsed)
+            {
+                var shouldAdd = false;
+                if (thing.TryGetQuality(out QualityCategory qCat))
+                {
+                    if (ingredientToFind.Range.Includes(qCat))
+                    {
+                        shouldAdd = true;
+                    }
+                }
+                else if (ingredientToFind.Range == QualityRange.All)
+                {
+                    shouldAdd = true;
+                }
+                if (shouldAdd)
+                {
+                    int usedCount = Mathf.Min(Mathf.FloorToInt(AvailableCounts[thing.def]), thing.stackCount);
+                    ThingCountUtility.AddToList(chosen, thing, usedCount);
+                    AvailableCounts[thing.def] -= usedCount;
+                    AssignedThings.Add(thing);
+                    bool ingredientFullyFound = AvailableCounts[thing.def] < 0.001f;
+                    if (ingredientFullyFound)
+                    {
+                        return true;
+                    }
+                }
+            }
+            return false;
         }
 
         private static Job StartNewUpgradeJob(Bill bill, IBillGiver workbench, Thing itemToUpgrade, IList<ThingCount> ingredients)
@@ -315,15 +316,7 @@ namespace UpgradeQuality.Items
 
         private sealed class DefCountList
         {
-            public int Count
-            {
-                get
-                {
-                    return this._defs.Count;
-                }
-            }
-
-            private float this[ThingDef def]
+            public float this[ThingDef def]
             {
                 get
                 {
@@ -362,22 +355,6 @@ namespace UpgradeQuality.Items
             {
                 this._defs = new List<ThingDef>();
                 this._counts = new List<float>();
-            }
-
-            public float GetCount(int index)
-            {
-                return this._counts[index];
-            }
-
-            public void SetCount(int index, float val)
-            {
-                this._counts[index] = val;
-                this.CheckRemove(index);
-            }
-
-            public ThingDef GetDef(int index)
-            {
-                return this._defs[index];
             }
 
             private void CheckRemove(int index)
