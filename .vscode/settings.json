@@ -13,5 +13,9 @@
         "**/bin": true,
         "**/obj": true,
         "**/.vs": true
+    },
+    "sonarlint.connectedMode.project": {
+        "connectionId": "gargair",
+        "projectKey": "Gargair_RimWorld_UpgradeQuality"
     }
 }
