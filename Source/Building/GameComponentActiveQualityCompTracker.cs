@@ -3,11 +3,11 @@ using Verse;
 
 namespace UpgradeQuality.Building
 {
-    public class GameComponentActiveQualityCompTracker : GameComponent
+    public class GameComponent_ActiveQualityCompTracker : GameComponent
     {
         private readonly List<CompUpgradeQualityBuilding> activeQualityComps = new List<CompUpgradeQualityBuilding>();
         private readonly Game activeGame;
-        public GameComponentActiveQualityCompTracker(Game game) { this.activeGame = game; }
+        public GameComponent_ActiveQualityCompTracker(Game game) { this.activeGame = game; }
 
         public override void LoadedGame()
         {

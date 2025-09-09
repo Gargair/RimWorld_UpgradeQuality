@@ -1,8 +1,10 @@
-﻿using System.Collections.Generic;
+﻿using HarmonyLib;
+using RimWorld;
+using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
-using HarmonyLib;
-using RimWorld;
+using System.Reflection.Emit;
+using Unity.Collections;
 using Verse;
 
 namespace UpgradeQuality.Building
@@ -70,53 +72,45 @@ namespace UpgradeQuality.Building
     {
         public static IEnumerable<CodeInstruction> Transpiler(IEnumerable<CodeInstruction> instructions)
         {
+            var matcher = new CodeMatcher(instructions);
             FieldInfo defField = AccessTools.DeclaredField(typeof(Thing), nameof(Thing.def));
+            FieldInfo entityDefToBuildField = AccessTools.DeclaredField(typeof(ThingDef), nameof(ThingDef.entityDefToBuild));
+            MethodInfo get_Stuff = AccessTools.PropertyGetter(typeof(Thing), nameof(Thing.Stuff));
             MethodInfo costListAdjustedMethod = AccessTools.DeclaredMethod(typeof(CostListCalculator), nameof(CostListCalculator.CostListAdjusted), new System.Type[] { typeof(BuildableDef), typeof(ThingDef), typeof(bool) });
             MethodInfo totalMaterialCostMethod = AccessTools.DeclaredMethod(typeof(Frame), nameof(Frame.TotalMaterialCost));
-            bool inReplacing = false;
-            bool didReplace = false;
-            bool foundTotalMaterialCostMethod = false;
-            foreach (var instruction in instructions)
+
+            var toMatch = new CodeMatch[]
             {
-                if (instruction.LoadsField(defField))
-                {
-#if DEBUG && DEBUGBUILDINGS
-                    UpgradeQualityUtility.LogMessage("Found start field for replace");
-#endif
-                    inReplacing = true;
-                }
-                if (!inReplacing)
-                {
-                    yield return instruction;
-                }
-#if DEBUG && DEBUGBUILDINGS
-                else
-                {
-                    UpgradeQualityUtility.LogMessage("Skipped instruction", instruction.ToString());
-                }
-#endif
-                if (instruction.Calls(costListAdjustedMethod))
-                {
-#if DEBUG && DEBUGBUILDINGS
-                    UpgradeQualityUtility.LogMessage("Found end call for replace. Emitting call");
-#endif
-                    yield return CodeInstruction.Call(typeof(Frame), nameof(Frame.TotalMaterialCost));
-                    didReplace = true;
-                    inReplacing = false;
-                }
-                if (instruction.Calls(totalMaterialCostMethod))
-                {
-                    UpgradeQualityUtility.LogWarning("Found replacing method. If you see this warning please inform mod author. It is likely this can be ignored otherwise.");
-                    foundTotalMaterialCostMethod = true;
-                }
+                new CodeMatch(OpCodes.Ldarg_0),
+                new CodeMatch(OpCodes.Ldfld, defField),
+                new CodeMatch(OpCodes.Ldfld, entityDefToBuildField),
+                new CodeMatch(OpCodes.Ldarg_0),
+                new CodeMatch(OpCodes.Call, get_Stuff),
+                new CodeMatch(OpCodes.Ldc_I4_1),
+                new CodeMatch(OpCodes.Call, costListAdjustedMethod),
+                new CodeMatch(OpCodes.Stloc_1)
+            };
+
+            var toReplace = new CodeInstruction[]
+            {
+                new CodeInstruction(OpCodes.Ldarg_0),
+                new CodeInstruction(OpCodes.Call, totalMaterialCostMethod),
+                new CodeInstruction(OpCodes.Stloc_1)
+            };
+
+            matcher.MatchStartForward(toMatch);
+
+            if (matcher.IsValid)
+            {
+                matcher.RemoveInstructions(toMatch.Length);
+                matcher.InsertAndAdvance(toReplace);
+                return matcher.InstructionEnumeration();
             }
-            if (!inReplacing && !didReplace && !foundTotalMaterialCostMethod)
+            else
             {
                 UpgradeQualityUtility.LogError("Transpiler for Frame.GetInspectString did not find its anchor.");
-            }
-            if (inReplacing)
-            {
-                UpgradeQualityUtility.LogError("Transpiler for Frame.GetInspectString did not find ending instruction.");
+                UpgradeQualityUtility.LogWarning("Display for frames may not show correct building materials. This is purely a UI bug.");
+                return instructions;
             }
         }
     }

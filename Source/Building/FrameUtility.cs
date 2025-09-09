@@ -50,7 +50,7 @@ namespace UpgradeQuality.Building
         {
             Type typeFromHandle = typeof(ThingDef);
             HashSet<ushort> h = ((Dictionary<Type, HashSet<ushort>>)AccessTools.Field(typeof(ShortHashGiver), "takenHashesPerDeftype").GetValue(null))[typeFromHandle];
-            foreach (ThingDef upgradeBuildingThingDef in DefDatabase<ThingDef>.AllDefs.Where(td => td.HasComp(typeof(CompUpgradeQualityBuilding))))
+            foreach (ThingDef upgradeBuildingThingDef in DefDatabase<ThingDef>.AllDefs.Where(td => td.HasComp(typeof(CompUpgradeQualityBuilding))).ToList())
             {
                 ThingDef upgradeFrameDef = NewReplaceFrameDef_Thing(upgradeBuildingThingDef);
                 frameCache[upgradeBuildingThingDef] = upgradeFrameDef;
