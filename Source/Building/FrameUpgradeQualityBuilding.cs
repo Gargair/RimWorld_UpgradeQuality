@@ -5,7 +5,7 @@ using Verse.AI.Group;
 
 namespace UpgradeQuality.Building
 {
-    public class FrameUpgradeQualityBuilding : Frame
+    public class Frame_UpgradeQuality_Building : Frame
     {
         private ThingWithComps _thingToChange;
         public ThingWithComps ThingToChange { get => this._thingToChange; set => this._thingToChange = value; }
@@ -28,7 +28,7 @@ namespace UpgradeQuality.Building
             }
         }
 
-        private CompUpgradeQualityBuilding Comp => this.ThingToChange?.GetComp<CompUpgradeQualityBuilding>();
+        private Comp_UpgradeQuality_Building Comp => this.ThingToChange?.GetComp<Comp_UpgradeQuality_Building>();
 
         public override void Notify_KilledLeavingsLeft(List<Thing> leavings)
         {

@@ -12,7 +12,7 @@ namespace UpgradeQuality.Building
             if (__instance.def == UpgradeQualityDefOf.IncreaseQuality_Building
              && __instance.target.HasThing
              && __instance.target.Thing is ThingWithComps thingWithComps
-             && thingWithComps.TryGetComp<CompUpgradeQualityBuilding>(out var upgComp))
+             && thingWithComps.TryGetComp<Comp_UpgradeQuality_Building>(out var upgComp))
             {
                 upgComp.SkipRemoveDesignation = true;
                 upgComp.CancelUpgrade();

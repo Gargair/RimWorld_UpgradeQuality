@@ -35,11 +35,11 @@ namespace UpgradeQuality.Building
             return thing != null && IsUpgradeBuildingFrame(thing.def);
         }
 
-        public static bool IsUpgradeBuildingFrame(Thing thing, out FrameUpgradeQualityBuilding frame)
+        public static bool IsUpgradeBuildingFrame(Thing thing, out Frame_UpgradeQuality_Building frame)
         {
             if (IsUpgradeBuildingFrame(thing))
             {
-                frame = (FrameUpgradeQualityBuilding)thing;
+                frame = (Frame_UpgradeQuality_Building)thing;
                 return true;
             }
             frame = null;
@@ -50,7 +50,7 @@ namespace UpgradeQuality.Building
         {
             Type typeFromHandle = typeof(ThingDef);
             HashSet<ushort> h = ((Dictionary<Type, HashSet<ushort>>)AccessTools.Field(typeof(ShortHashGiver), "takenHashesPerDeftype").GetValue(null))[typeFromHandle];
-            foreach (ThingDef upgradeBuildingThingDef in DefDatabase<ThingDef>.AllDefs.Where(td => td.HasComp(typeof(CompUpgradeQualityBuilding))).ToList())
+            foreach (ThingDef upgradeBuildingThingDef in DefDatabase<ThingDef>.AllDefs.Where(td => td.HasComp(typeof(Comp_UpgradeQuality_Building))).ToList())
             {
                 ThingDef upgradeFrameDef = NewReplaceFrameDef_Thing(upgradeBuildingThingDef);
                 frameCache[upgradeBuildingThingDef] = upgradeFrameDef;
@@ -108,7 +108,7 @@ namespace UpgradeQuality.Building
                 isFrameInt = true,
                 category = ThingCategory.Building,
                 label = "Unspecified building upgrade quality frame",
-                thingClass = typeof(FrameUpgradeQualityBuilding),
+                thingClass = typeof(Frame_UpgradeQuality_Building),
                 altitudeLayer = AltitudeLayer.BuildingOnTop,
                 useHitPoints = true,
                 selectable = true,

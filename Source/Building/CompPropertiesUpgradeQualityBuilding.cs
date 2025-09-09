@@ -2,11 +2,11 @@
 
 namespace UpgradeQuality.Building
 {
-    public class CompPropertiesUpgradeQualityBuilding : CompProperties
+    public class CompProperties_UpgradeQuality_Building : CompProperties
     {
-        public CompPropertiesUpgradeQualityBuilding()
+        public CompProperties_UpgradeQuality_Building()
         {
-            compClass = typeof(CompUpgradeQualityBuilding);
+            compClass = typeof(Comp_UpgradeQuality_Building);
         }
     }
 }

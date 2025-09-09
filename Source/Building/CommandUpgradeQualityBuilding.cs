@@ -6,9 +6,9 @@ using Verse;
 
 namespace UpgradeQuality.Building
 {
-    public class CommandUpgradeQualityBuilding : Command_Action
+    public class Command_UpgradeQuality_Building : Command_Action
     {
-        public CommandUpgradeQualityBuilding()
+        public Command_UpgradeQuality_Building()
         {
             icon = ContentFinder<Texture2D>.Get("UpgradeQuality/UI/QualityUp");
             defaultLabel = "UpgQlty.Labels.UpgradeBuilding".Translate();
@@ -26,7 +26,7 @@ namespace UpgradeQuality.Building
             {
                 if (item is ThingWithComps thing)
                 {
-                    CompUpgradeQualityBuilding upgradeQualityComp = thing.TryGetComp<CompUpgradeQualityBuilding>();
+                    Comp_UpgradeQuality_Building upgradeQualityComp = thing.TryGetComp<Comp_UpgradeQuality_Building>();
                     upgradeQualityComp?.SetDesiredQualityTo(cat, keepQuality);
                 }
             }

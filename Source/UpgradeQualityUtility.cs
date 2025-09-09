@@ -17,7 +17,7 @@ namespace UpgradeQuality
     {
         static UpgradeQualityUtility()
         {
-            var upgradeBuildingCompProps = new CompPropertiesUpgradeQualityBuilding();
+            var upgradeBuildingCompProps = new CompProperties_UpgradeQuality_Building();
             foreach (var thingDef in DefDatabase<ThingDef>.AllDefs.Where(thingDef => thingDef.HasComp(typeof(CompQuality))))
             {
                 if (thingDef.building != null || thingDef.Minifiable)

@@ -8,9 +8,9 @@ using Verse.AI;
 
 namespace UpgradeQuality.Items
 {
-    internal class WorkGiverUpgradeQualityItem : WorkGiver_DoBill
+    internal class WorkGiver_UpgradeQuality_Item : WorkGiver_DoBill
     {
-        public WorkGiverUpgradeQualityItem()
+        public WorkGiver_UpgradeQuality_Item()
         {
             this.chosenIngThings = new List<ThingCount>();
         }

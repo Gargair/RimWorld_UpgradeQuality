@@ -4,7 +4,7 @@ using Verse;
 
 namespace UpgradeQuality.Building
 {
-    public class CompUpgradeQualityBuilding : ThingComp
+    public class Comp_UpgradeQuality_Building : ThingComp
     {
         private QualityCategory _desiredQuality;
         public QualityCategory DesiredQuality
@@ -18,9 +18,9 @@ namespace UpgradeQuality.Building
             get => this._keepQuality;
             set => this._keepQuality = value;
         }
-        public CompPropertiesUpgradeQualityBuilding Props => (CompPropertiesUpgradeQualityBuilding)this.props;
-        private FrameUpgradeQualityBuilding _placedFrame;
-        public FrameUpgradeQualityBuilding PlacedFrame
+        public CompProperties_UpgradeQuality_Building Props => (CompProperties_UpgradeQuality_Building)this.props;
+        private Frame_UpgradeQuality_Building _placedFrame;
+        public Frame_UpgradeQuality_Building PlacedFrame
         {
             get => this._placedFrame;
             set => this._placedFrame = value;
@@ -42,9 +42,9 @@ namespace UpgradeQuality.Building
                 return _compQuality;
             }
         }
-        private readonly GameComponentActiveQualityCompTracker tracker = Current.Game.GetComponent<GameComponentActiveQualityCompTracker>();
+        private readonly GameComponent_ActiveQualityCompTracker tracker = Current.Game.GetComponent<GameComponent_ActiveQualityCompTracker>();
 
-        public CompUpgradeQualityBuilding() { }
+        public Comp_UpgradeQuality_Building() { }
 
         public override IEnumerable<Gizmo> CompGetGizmosExtra()
         {
@@ -56,7 +56,7 @@ namespace UpgradeQuality.Building
 
         private static Command CreateChangeBuildingGizmo()
         {
-            return new CommandUpgradeQualityBuilding();
+            return new Command_UpgradeQuality_Building();
         }
 
         public void SetDesiredQualityTo(QualityCategory desiredQuality, bool keepQuality)
@@ -104,7 +104,7 @@ namespace UpgradeQuality.Building
 #if DEBUG && DEBUGBUILDINGS
             UpgradeQualityUtility.LogMessage("Creating Frame");
 #endif
-            FrameUpgradeQualityBuilding frame = new FrameUpgradeQualityBuilding
+            Frame_UpgradeQuality_Building frame = new Frame_UpgradeQuality_Building
             {
                 def = FrameUtility.GetFrameDefForThingDef(parent.def)
             };
@@ -119,7 +119,7 @@ namespace UpgradeQuality.Building
 #if DEBUG && DEBUGBUILDINGS
             UpgradeQualityUtility.LogMessage("Placing Frame");
 #endif
-            PlacedFrame = (FrameUpgradeQualityBuilding)GenSpawn.Spawn(frame, parent.Position, parent.Map, parent.Rotation);
+            PlacedFrame = (Frame_UpgradeQuality_Building)GenSpawn.Spawn(frame, parent.Position, parent.Map, parent.Rotation);
         }
 
         public void CancelUpgrade()

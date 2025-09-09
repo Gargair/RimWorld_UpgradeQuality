@@ -6,7 +6,7 @@ using Verse.AI;
 
 namespace UpgradeQuality.Items
 {
-    public class JobDriverUpgradeQualityItem : JobDriver_DoBill
+    public class JobDriver_UpgradeQuality_Item : JobDriver_DoBill
     {
         private Thing cachedThingToUpgrade;
 

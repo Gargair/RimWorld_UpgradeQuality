@@ -2,7 +2,7 @@
 <Defs>
   <JobDef>
     <defName>IncreaseQuality_Job</defName>
-    <driverClass>UpgradeQuality.Items.JobDriverUpgradeQualityItem</driverClass>
+    <driverClass>UpgradeQuality.Items.JobDriver_UpgradeQuality_Item</driverClass>
     <reportString>Upgrading an item in quality.</reportString>
   </JobDef>
 </Defs>

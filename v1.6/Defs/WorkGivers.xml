@@ -3,7 +3,7 @@
   <WorkGiverDef>
     <defName>UpgQlty_UpgradeQuality_Item</defName>
     <label>upgrade items</label>
-    <giverClass>UpgradeQuality.Items.WorkGiverUpgradeQualityItem</giverClass>
+    <giverClass>UpgradeQuality.Items.WorkGiver_UpgradeQuality_Item</giverClass>
     <workType>Crafting</workType>
     <priorityInType>95</priorityInType>
     <fixedBillGiverDefs>

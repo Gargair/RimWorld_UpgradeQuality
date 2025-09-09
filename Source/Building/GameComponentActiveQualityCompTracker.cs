@@ -5,7 +5,7 @@ namespace UpgradeQuality.Building
 {
     public class GameComponent_ActiveQualityCompTracker : GameComponent
     {
-        private readonly List<CompUpgradeQualityBuilding> activeQualityComps = new List<CompUpgradeQualityBuilding>();
+        private readonly List<Comp_UpgradeQuality_Building> activeQualityComps = new List<Comp_UpgradeQuality_Building>();
         private readonly Game activeGame;
         public GameComponent_ActiveQualityCompTracker(Game game) { this.activeGame = game; }
 
@@ -16,7 +16,7 @@ namespace UpgradeQuality.Building
             {
                 foreach (var thing in map.listerBuildings.allBuildingsColonist)
                 {
-                    if (thing.TryGetComp<CompUpgradeQualityBuilding>(out var comp))
+                    if (thing.TryGetComp<Comp_UpgradeQuality_Building>(out var comp))
                     {
                         this.AddComponent(comp);
                     }
@@ -41,7 +41,7 @@ namespace UpgradeQuality.Building
             }
         }
 
-        public void AddComponent(CompUpgradeQualityBuilding comp)
+        public void AddComponent(Comp_UpgradeQuality_Building comp)
         {
             if (!this.activeQualityComps.Contains(comp) && comp.IsStillActive())
             {
@@ -49,7 +49,7 @@ namespace UpgradeQuality.Building
             }
         }
 
-        public void RemoveComponent(CompUpgradeQualityBuilding comp)
+        public void RemoveComponent(Comp_UpgradeQuality_Building comp)
         {
             this.activeQualityComps.Remove(comp);
         }
